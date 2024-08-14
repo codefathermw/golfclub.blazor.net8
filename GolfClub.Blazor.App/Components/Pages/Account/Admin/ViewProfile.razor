@@ -1,0 +1,24 @@
+@page "/view-profile/{userId:int}"
+
+@using GolfClub.BLL.Services.Authentication
+@using Microsoft.AspNetCore.Authorization
+@attribute [StreamRendering]
+@attribute [Authorize(Roles = "Admin")]
+
+@inject NavigationManager NavigationManager;
+@inject IUserAuthenticationService userAuthenticationService;
+
+@if (userId > 0) {
+    <GolfClub.Blazor.App.Components.Shared.ProfileComponent UserId="@userId" />
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    private int userId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Additional initialization logic if needed
+    }
+}
+

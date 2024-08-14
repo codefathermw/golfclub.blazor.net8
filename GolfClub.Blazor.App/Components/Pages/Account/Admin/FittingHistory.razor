@@ -1,0 +1,88 @@
+@page "/fitting-history"
+
+@using GolfClub.BLL.Services.Files
+@using GolfClub.BLL.Services.Fittings
+@using GolfClub.DAL.Models
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [StreamRendering]
+@attribute [Authorize(Roles = "Admin")]
+
+@inject IFittingService fittingService
+@inject NavigationManager navigationManager
+
+<PageTitle>Fitting History</PageTitle>
+
+<div class="p-3">
+    <h2 class="text-success mb-3">Fitting History</h2>
+    <p class="mb-4">Below is a list of all fitting History</p>
+
+    <div class="">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
+        else if (fittingRequests == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-hover fitting-table">
+                <thead class="">
+                    <tr>
+                        <th>#</th>
+                        <th>Scheduled Date</th>
+                        <th>Scheduled Time</th>
+                        <th>Customer Name</th>
+                        <th>Received Date</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (fittingRequests is not null) {
+                        @foreach (var request in fittingRequests)
+                        {
+                            <tr>
+                                <td>@rowNum</td>
+                                <td>@request.ScheduledDate.ToShortDateString()</td>
+                                <td>@request.ScheduledDate</td>
+                                <td>@request.User.UserProfile.FirstName @request.User.UserProfile.LastName</td>
+                                <td>@request.RequestDate.ToShortDateString()</td>
+                                <td class="text-center">
+                                    <span class="badge rounded-pill bg-@StringHelper.GetTaskStatusClass(request.Status.ToLower())">
+                                        @request.Status
+                                    </span>
+                                </td>
+                            </tr>
+                            rowNum++;
+                        }                        
+                    }
+                </tbody>
+            </table>
+        }
+    </div>    
+</div>
+
+
+@code {
+
+    private List<Fitting> fittingRequests = null!;
+    private string errorMessage = string.Empty;
+    private int rowNum = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await fittingService.GetFittingRequest();
+
+        if (response.IsErrorOccured)
+        {
+            errorMessage = response.Message;
+            return;
+        }
+
+        fittingRequests = response.Result.ToList();
+    }
+}

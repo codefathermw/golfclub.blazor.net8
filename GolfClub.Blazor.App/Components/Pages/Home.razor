@@ -1,0 +1,29 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+
+<PageTitle>Home</PageTitle>
+
+<div class="jumbotron jumbotron-fluid bg-cover d-flex justify-content-center align-items-center">
+    <div class="text-center col-md-10 p-5 bg-white">
+        <h1 class="display-4">Perfect Your Swing, Perfect Your Game</h1>
+        <p class="lead">At our Golf Club Fitting Center, we ensure that your clubs are tailored to perfection. Start your journey to a better game today.</p>
+        <a href="/getting-started" class="btn btn-outline-success btn-lg">Get Started</a>
+    </div>
+</div>
+
+<style>
+    .jumbotron {
+        padding: 4rem 2rem;
+        background-size: cover;
+        background-position: center;
+        height: 600px;
+        border-radius: 12px;
+    }
+
+    .bg-cover {
+        background-image: url('images/golf-lessons2.jpg');
+    }
+
+</style>

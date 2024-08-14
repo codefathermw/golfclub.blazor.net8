@@ -1,0 +1,229 @@
+﻿
+@using GolfClub.BLL.DTOs
+@using GolfClub.BLL.Models
+@using GolfClub.BLL.Services.Files
+@using GolfClub.BLL.Services.Fittings
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject IFittingService FittingService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+
+@rendermode InteractiveServer
+
+<div class="p-3">
+
+    @if (step != 4)
+    {
+        <h2 class="text-success mb-3">@Title</h2>
+        <p>Follow the steps below to schedule your @TaskName:</p>        
+    }
+
+    <div class="row mt-4">
+        <div class="wizard col-md-8">
+            @if (!string.IsNullOrEmpty(validationError))
+            {
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i> @validationError
+                </div>
+            }
+
+            @if (step == 1)
+            {
+                @if (string.IsNullOrEmpty(validationError))
+                {
+                    @if (slotsAvailable)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <i class="bi bi-check-circle me-1" aria-hidden="true"></i> Slots available on this day
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-secondary" role="alert">
+                            <i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i> Please note that sessions are not available on weekends.
+                        </div>
+                    }                    
+                }
+
+                <div class="step">
+                    <label class="mb-2">Select a Date</label>
+                    <input type="date" class="form-control" @onchange="CheckDateValidation" />
+                    <button class="btn btn-primary mt-3" @onclick="NextStep" disabled="@(!slotsAvailable)">Next</button>
+                </div>
+            }
+            else if (step == 2)
+            {
+                <div class="step">
+                    <label class="mb-2">Select Available Time</label>
+                    <select class="form-select" @bind="selectedTime">
+                        @foreach (var time in availableTimeSlots)
+                        {
+                            <option value="@time">@time</option>
+                        }
+                    </select>
+                    <button class="btn btn-secondary mt-3 me-2" @onclick="PreviousStep">Back</button>
+                    <button class="btn btn-primary mt-3" @onclick="NextStep" disabled="@(string.IsNullOrEmpty(selectedTime))">Next</button>
+                </div>
+            }
+            else if (step == 3)
+            {
+                <div class="step">
+                    <label class="mb-2">Add Comments</label>
+                    <textarea class="form-control" @bind="comments"></textarea>
+                    <button class="btn btn-secondary mt-3 me-2" @onclick="PreviousStep">Back</button>
+                    <button class="btn btn-success mt-3" @onclick="SaveAsync">Save</button>
+                </div>
+            }
+            else if (step == 4)
+            {
+                <div class="confirmation">
+                    <h2 class="text-success mb-3"><i class="bi bi-check-circle"></i> Successful</h2>
+                    <p>You have scheduled a @TaskName on <b>@selectedDate?.ToString("MMMM d, yyyy")</b> at <b>@selectedTime</b>.</p>
+                    <button class="btn btn-outline-success" @onclick="Reset">Schedule Another</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Schedule a Task";
+    [Parameter] public string TaskName { get; set; } = "task";
+    [Parameter] public string FittingType { get; set; } = "default-task";
+
+    private int step = 1;
+    private DateTime? selectedDate = DateTime.Today;
+    private string selectedTime { get; set; }
+    private string comments = string.Empty;
+    private bool slotsAvailable = false;
+    private string validationError = string.Empty;
+    private List<string> availableTimeSlots = new();
+    private string userId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        try
+        {
+            if (user.Identity.IsAuthenticated)
+            {
+                userId = user.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+            }
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                NavigationManager.NavigateTo("/forbidden");
+            }
+        }
+        catch (Exception)
+        {
+            NavigationManager.NavigateTo("/Error");
+        }
+    }
+
+    private async Task CheckDateValidation(ChangeEventArgs args)
+    {
+        validationError = string.Empty;
+        slotsAvailable = false;
+
+        if (DateTime.TryParse(args.Value?.ToString(), out DateTime date))
+        {
+            selectedDate = date;
+        }
+
+        if (selectedDate == null)
+        {
+            validationError = "Please select a valid date.";
+            return;
+        }
+
+        if (selectedDate < DateTime.Today)
+        {
+            validationError = "The date must be today or later.";
+            return;
+        }
+
+        if (selectedDate.Value.DayOfWeek == DayOfWeek.Saturday || selectedDate.Value.DayOfWeek == DayOfWeek.Sunday)
+        {
+            validationError = "The selected date cannot be a weekend (Saturday or Sunday).";
+            return;
+        }
+
+        var response = await FittingService.GetAvailableTimeSlot(selectedDate.Value);
+
+        if (response.IsErrorOccured)
+        {
+            validationError = response.Message;
+            return;
+        }
+
+        var timeSlots = response.Result;
+
+        if (!timeSlots.Any())
+        {
+            validationError = "No slots available on the selected day. Please choose another date.";
+            return;
+        }
+
+        availableTimeSlots = timeSlots.Select(t => DateTime.Today.Add(t).ToString("h:mm tt")).ToList();
+        slotsAvailable = true;
+        validationError = null;
+    }
+
+    private void NextStep()
+    {
+        slotsAvailable = false;
+
+        if (string.IsNullOrEmpty(validationError))
+        {
+            step++;
+        }
+    }
+
+    private void PreviousStep()
+    {
+        if (step > 1)
+        {
+            step--;
+            validationError = null;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        validationError = null;
+
+        var saveFittingRequestDto = new SaveFittingRequestDto()
+        {
+            Comments = comments,
+            FittingType = FittingType,
+            ScheduledDate = selectedDate.Value,
+            UserId = Convert.ToInt32(userId)
+        };
+
+        var response = await FittingService.SaveFittingRequest(saveFittingRequestDto);
+
+        if (response.IsErrorOccured)
+        {
+            validationError = response.Message;
+            return;
+        }
+        else
+        {
+            step = 4;           
+        }
+    }
+
+    private void Reset()
+    {
+        slotsAvailable = false;
+        availableTimeSlots = new List<string>();
+        selectedDate = DateTime.Today;
+        selectedTime = string.Empty;
+        comments = string.Empty;
+        step = 1;
+    }
+}

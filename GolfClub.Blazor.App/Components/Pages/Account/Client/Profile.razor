@@ -1,0 +1,29 @@
+﻿@page "/profile"
+
+@using GolfClub.BLL.Services.Authentication
+@using Microsoft.AspNetCore.Authorization
+@attribute [StreamRendering]
+@attribute [Authorize(Roles = "User")]
+
+@inject NavigationManager NavigationManager;
+@inject IUserAuthenticationService userAuthenticationService;
+
+@if (userId > 0) {
+    <GolfClub.Blazor.App.Components.Shared.ProfileComponent userId="@userId"/>
+}
+
+@code {
+    private int userId { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await userAuthenticationService.GetUserId();
+
+        if (response.IsErrorOccured)
+        {
+            NavigationManager.NavigateTo("/Error");
+        }
+
+        userId = response.Result;
+    }
+}
+

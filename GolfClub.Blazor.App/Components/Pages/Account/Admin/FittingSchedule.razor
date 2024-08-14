@@ -1,0 +1,225 @@
+﻿@page "/fitting-schedule"
+@using System.Globalization
+@using GolfClub.BLL.Services.Fittings
+@using GolfClub.DAL.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+
+@rendermode InteractiveServer
+
+@inject IFittingService fittingService
+@inject NavigationManager navigationManager
+
+<PageTitle>Fitting Schedule</PageTitle>
+
+<div class="p-3">
+    <h2 class="text-success mb-3">Fitting Schedule</h2>
+    <p class="mb-4">Check out the monthly fitting Schedule</p>
+
+    <div class="row">    
+        <div class="container calendar">
+            <div class="calendar-header">
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-outline-success" @onclick="GoToPreviousMonth">Back</button>
+                    <h4 class="mx-3">@currentMonthName @currentYear</h4>
+                    <button class="btn btn-outline-success ms-2" @onclick="GoToNextMonth">Next</button>
+                </div>
+                <button class="btn btn-primary" @onclick="GoToToday">Today</button>
+            </div>
+            <div class="calendar-body px-0">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Sun</th>
+                            <th scope="col">Mon</th>
+                            <th scope="col">Tue</th>
+                            <th scope="col">Wed</th>
+                            <th scope="col">Thur</th>
+                            <th scope="col">Fri</th>
+                            <th scope="col">Sat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var week in Weeks)
+                        {
+                            <tr>
+                            @foreach (var day in week)
+                            {
+                                <td>
+                                    <div class="day @(day.IsToday ? "today" : "") d-flex align-items-start flex-column bd-highlight" style="height: 100%;">
+                                            <div class="mb-auto bd-highlight">
+                                                @day.Date.ToString("dd")
+                                            </div>
+                                            <div class="bd-highlight">
+                                                <div>
+                                                    @foreach (var label in day.Labels)
+                                                    {
+                                                        <span class="badge rounded-pill bg-secondary me-1">View</span> 
+                                                    }     
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>            
+        </div>
+
+    </div>    
+</div>
+
+
+@code {
+    private DateTime currentMonth;
+    private string currentMonthName;
+    private int currentYear;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentMonth = DateTime.Now;
+        await UpdateCalendar();
+    }
+
+    private async Task UpdateCalendar()
+    {
+        currentMonthName = currentMonth.ToString("MMMM", CultureInfo.InvariantCulture);
+        currentYear = currentMonth.Year;
+
+        var response = await fittingService.GetMonthlyFittingsAsync(currentMonth);
+
+        if (response.IsErrorOccured)
+        {
+            navigationManager.NavigateTo("/Error");
+            return;
+        }
+
+        GenerateCalendar(currentMonth, response.Result.ToList());
+    }
+
+    private async Task GoToPreviousMonth()
+    {
+        currentMonth = currentMonth.AddMonths(-1);
+        await UpdateCalendar();
+    }
+
+    private async Task GoToNextMonth()
+    {
+        currentMonth = currentMonth.AddMonths(1);
+        await UpdateCalendar();
+    }
+
+    private async Task GoToToday()
+    {
+        currentMonth = DateTime.Now;
+        await UpdateCalendar();
+    }
+
+    public List<List<Day>> Weeks { get; set; } = new();
+
+    private void GenerateCalendar(DateTime month, List<Fitting> fittings)
+    {
+        Weeks.Clear();
+        var firstDayOfMonth = new DateTime(month.Year, month.Month, 1);
+        var firstDayOfWeek = firstDayOfMonth.AddDays(-(int)firstDayOfMonth.DayOfWeek);
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+        var lastDayOfWeek = lastDayOfMonth.AddDays(6 - (int)lastDayOfMonth.DayOfWeek);
+
+        var currentDay = firstDayOfWeek;
+        while (currentDay <= lastDayOfWeek)
+        {
+            var week = new List<Day>();
+            for (int i = 0; i < 7; i++)
+            {
+                var day = new Day
+                {
+                    Date = currentDay,
+                    IsToday = currentDay.Date == DateTime.Today.Date,
+                    Labels = GenerateLabelsForDay(currentDay, fittings)
+                };
+                week.Add(day);
+                currentDay = currentDay.AddDays(1);
+            }
+            Weeks.Add(week);
+        }
+    }
+
+    private List<Label> GenerateLabelsForDay(DateTime date, List<Fitting> fittings)
+    {
+        var labels = new List<Label>();
+        
+        foreach(var item in fittings) {
+            if (date.Date == item.ScheduledDate.Date) {
+                labels.Add(new Label { Text = "", CssClass = "" });
+            }
+        }
+
+        return labels;
+    }
+
+    public class Day
+    {
+        public DateTime Date { get; set; }
+        public bool IsToday { get; set; }
+        public List<Label> Labels { get; set; } = new();
+    }
+
+    public class Label
+    {
+        public string Text { get; set; }
+        public string CssClass { get; set; }
+    }
+}
+
+<style>
+    .calendar {
+        width: 100%;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+        .calendar-header h3 {
+            margin: 0;
+        }
+
+        .calendar-header .btn {
+            margin: 0 5px;
+        }
+
+    .calendar-body .table{
+        width: 100%;
+    }
+
+    .calendar-body .table td{
+        padding: 0!important;
+        height: 100px;
+        max-width: 100px!important;
+    }
+
+    .calendar-body .table th {
+        text-align: center;
+        max-width: 100px!important;
+    }
+
+    .day {
+        padding: 10px;
+        background-color: #f8f9fa;
+        height: 100%;
+    }
+
+    .day-label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .today {
+        border: 2px solid #0d6efd;
+    }
+</style>

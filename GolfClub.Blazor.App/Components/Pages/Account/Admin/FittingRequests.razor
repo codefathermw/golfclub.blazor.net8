@@ -1,0 +1,103 @@
+﻿@page "/fitting-requests"
+@attribute [StreamRendering]
+
+@using GolfClub.BLL.Services.Files
+@using GolfClub.BLL.Services.Fittings
+@using GolfClub.DAL.Models
+@using Microsoft.AspNetCore.Authorization
+
+@inject IFittingService fittingService
+@inject NavigationManager navigationManager
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Fitting Requests</PageTitle>
+
+<div class="p-3">
+    <h2 class="text-success mb-3">Fitting Requests</h2>
+    <p class="mb-4">Below is a list of all fitting requests. You can click on any request to view and manage tasks associated with it.</p>
+
+    <div class="">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
+        else if (fittingRequests == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table table-hover fitting-table">
+                <thead class="">
+                    <tr>
+                        <th>#</th>
+                        <th>Scheduled Date</th>
+                        <th>Scheduled Time</th>
+                        <th>Customer Name</th>
+                        <th>Received Date</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (fittingRequests is not null) {
+                        @foreach (var request in fittingRequests)
+                        {
+                            <tr>
+                                <td>@rowNum</td>
+                                <td>@request.ScheduledDate.ToShortDateString()</td>
+                                <td>@request.ScheduledDate.ToShortTimeString()</td>
+                                <td>@request.User.UserProfile.FirstName @request.User.UserProfile.LastName</td>
+                                <td>@request.RequestDate.ToShortDateString()</td>
+                                <td class="text-center">
+                                    <span class="badge rounded-pill bg-@GetStatusBadgeClass(request.Status.ToLower())">
+                                        @request.Status
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a href="@($"/fitting-tasks/{request.FittingId}")" class="btn btn-outline-success btn-sm">Manage Tasks</a>
+                                </td>
+                            </tr>
+                            rowNum++;
+                        }                        
+                    }
+                </tbody>
+            </table>
+        }
+    </div>    
+</div>
+
+
+@code {
+
+    private List<Fitting> fittingRequests = null!;
+    private string errorMessage = string.Empty;
+    private int rowNum = 1;
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await fittingService.GetFittingRequest();
+
+        if (response.IsErrorOccured)
+        {
+            errorMessage = response.Message;
+            return;
+        }
+
+        fittingRequests = response.Result.ToList();
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "pending" => "warning",
+            "confirmed" => "success",
+            "cancelled" => "danger",
+            "completed" => "success",
+            "scheduled" => "info",
+            _ => "success",
+        };
+    }
+}

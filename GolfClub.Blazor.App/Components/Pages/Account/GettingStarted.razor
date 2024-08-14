@@ -1,0 +1,75 @@
+﻿@page "/getting-started"
+
+@using GolfClub.BLL.Services.Files
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@rendermode InteractiveServer
+
+@inject IFileService fileService;
+@inject NavigationManager NavigationManager;
+
+<div class="jumbotron p-0">
+    <div class="bg-white p-3 rounded shadow-sm">
+        <h2 class="text-success mb-3 mb-3">Welcome to Your Golf Club Fitting Experience</h2>
+
+        @if (!isEditing)
+        {
+            <p>@paragraphText</p>
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    <button class="btn btn-outline-secondary" @onclick="EnableEditing">Edit</button>
+                </Authorized>
+            </AuthorizeView>
+        }
+        else
+        {
+            <textarea @bind="paragraphText" rows="5" class="form-control mb-3"></textarea>
+            <button class="btn btn-outline-success mt-2" @onclick="SaveChanges">Save</button>
+            <button class="btn btn-outline-secondary mt-2 ms-2" @onclick="CancelEditing">Cancel</button>
+        }
+    </div>
+</div>
+
+@code {
+    private string paragraphText = string.Empty;
+    private string tempText = string.Empty;
+    private bool isEditing = false;
+    private string errorMessage = string.Empty;
+
+    private void EnableEditing()
+    {
+        tempText = paragraphText;
+        isEditing = true;
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await fileService.LoadContentFromFileAsync();
+
+        if (response.IsErrorOccured)
+        {
+            NavigationManager.NavigateTo("/Error");
+        }
+
+        paragraphText = response.Result;
+    }
+
+    private async void SaveChanges()
+    {
+        var response = await fileService.SaveContentToFileAsync(paragraphText);
+
+        if (response.IsErrorOccured)
+        {
+            errorMessage = response.Message;
+            return;
+        }
+
+        isEditing = false;
+    }
+
+    private void CancelEditing()
+    {
+        paragraphText = tempText;
+        isEditing = false;
+    }
+}

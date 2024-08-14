@@ -1,0 +1,88 @@
+﻿@page "/login"
+
+@using GolfClub.BLL.Models
+@using GolfClub.BLL.Services.Authentication
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+
+@inject IUserAuthenticationService userAuthenticationService;
+@inject NavigationManager navigationManager;
+@inject IHttpContextAccessor httpContextAccessor
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-5 col-lg-4 mt-5">
+            <div class="card shadow-sm mt-5">
+                <div class="card-body p-5">
+                    <h2 class="card-title text-center">Log in</h2>
+                    <p class="text-muted text-center">Log in to start using the services</p>
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger">@errorMessage</div>
+                    }
+
+                    <EditForm Model="@model" OnValidSubmit="Authenticate" FormName="LoginForm">
+                        <DataAnnotationsValidator/>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <InputText @bind-Value="model.UserName" type="text" class="form-control" placeholder="username" />
+                            <ValidationMessage For="() => model.UserName"/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <InputText @bind-Value="model.Password" type="password" class="form-control" id="password" placeholder="******" />
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="bi bi-eye-slash"></i>
+                                </button>
+                            </div>
+                            <ValidationMessage For="() => model.Password" />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Login</button>
+                    </EditForm>
+
+                    <div class="text-center mt-4">
+                        <small class="text-muted">Don't have an account? <a href="/signup">Sign up</a></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    public LoginModel model { get; set; } = new();
+
+    private string? errorMessage;
+
+    private async Task Authenticate()
+    {
+        var response = await userAuthenticationService.LoginAsync(new ()
+            {
+                Username = model.UserName,
+                Password = model.Password
+            });
+
+        if (response.IsErrorOccured)
+        {
+            errorMessage = response.Message;
+            return;
+        }
+
+        var principal = new ClaimsPrincipal(response.Result);
+        var httpContext = httpContextAccessor.HttpContext;
+
+        if (httpContext != null)
+        {
+            await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+            navigationManager.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = "Unable to sign in";
+        }
+    }
+}

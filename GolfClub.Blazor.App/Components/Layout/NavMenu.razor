@@ -1,0 +1,68 @@
+﻿<nav class="flex-column sidebar">
+    <NavItem Icon="bi-house-door" Label="Home" Link="" Match="NavLinkMatch.All" />
+    <NavItem Icon="bi-book" Label="Getting Started" Link="getting-started" />
+
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+            <NavItem Icon="bi-card-list" Label="Fitting Requests" Link="fitting-requests" />
+            <NavItem Icon="bi-list-check" Label="Fitting Tasks" Link="fitting-tasks" />
+            <NavItem Icon="bi-calendar3" Label="Fitting Schedule" Link="fitting-schedule" />
+            <NavItem Icon="bi-clock-history" Label="Fitting History" Link="fitting-history" />
+            <NavItem Icon="bi-person" Label="Customer Profiles" Link="customer-profiles" />
+        </Authorized>
+    </AuthorizeView>
+
+    <AuthorizeView Roles="User">
+        <Authorized>
+            <NavItem Icon="bi-calendar2-check" Label="Schedule a Swing Analysis" Link="swing-analysis" />
+            <NavItem Icon="bi-calendar2-check" Label="Schedule a Fitting" Link="fitting" />
+            <NavItem Icon="bi-list-task" Label="Fitting Progress" Link="fitting-progress" />
+            <NavItem Icon="bi-clock-history" Label="Account History" Link="account-history" />
+            <NavItem Icon="bi-person" Label="My Profile" Link="profile" />
+        </Authorized>
+    </AuthorizeView>
+
+    <NavItem Icon="bi-person" Label="Logout" Link="logout" />
+</nav>
+
+<style>
+    .sidebar {
+        height: 100vh;
+        padding-top: 15px;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #dee2e6;
+    }
+
+        .sidebar .nav-item {
+        }
+
+        .sidebar .nav-link {
+            padding: 12px 15px;
+            color: #3B4045!important;
+            font-size: 14px;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+
+            .sidebar .nav-link:hover {
+                color: #007bff!important;
+            }
+
+            .sidebar .nav-link.active {
+                background-color: #e9ecef;
+                color: #007bff !important;
+            }
+
+            .sidebar .nav-link i {
+                margin-right: 12px;
+                font-size: 18px;
+                margin-top: 16px;
+                color: #999;
+            }
+
+            .sidebar .nav-link.active i {
+                color: #007bff !important;
+            }
+</style>

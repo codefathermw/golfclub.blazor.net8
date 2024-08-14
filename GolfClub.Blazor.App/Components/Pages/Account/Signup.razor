@@ -1,0 +1,143 @@
+﻿@page "/signup"
+
+@using GolfClub.BLL.Models
+@using GolfClub.BLL.Services.Authentication
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+
+@inject IUserAuthenticationService userAuthenticationService
+@inject NavigationManager navigationManager
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4 mt-5">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+
+                    @if (isSuccess)
+                    {
+                        <div class="text-center">
+                            <h2 class="card-title text-success">Successful!</h2>
+                            <p class="text-muted">You have successfully registered your account.</p>
+                            <a class="btn btn-outline-success text" href="/login">Login now</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <h2 class="card-title text-center">Sign Up</h2>
+                        <p class="text-muted text-center">Sign up to start using our services</p>
+
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <p class="text-danger">@errorMessage</p>
+                        }
+
+                        <EditForm Model="@model" OnValidSubmit="Register" FormName="SignupForm">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="mb-3">
+                                <label class="form-label">First Name</label>
+                                <InputText @bind-Value="model.FirstName" type="text" class="form-control" placeholder="John" />
+                                <ValidationMessage For="() => model.FirstName" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Last Name</label>
+                                <InputText @bind-Value="model.LastName" type="text" class="form-control" placeholder="Doe" />
+                                <ValidationMessage For="() => model.LastName" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <InputText @bind-Value="model.UserName" type="text" class="form-control" placeholder="username" />
+                                <ValidationMessage For="() => model.UserName" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <InputText @bind-Value="model.Email" type="email" class="form-control" placeholder="mike@gmail.com" />
+                                <ValidationMessage For="() => model.Email" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <div class="input-group">
+                                    <InputText @bind-Value="model.Password" type="password" class="form-control" id="password" placeholder="******" />
+                                    <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
+                                        <i class="bi @passwordVisibleClass"></i>
+                                    </button>
+                                </div>
+                                <ValidationMessage For="() => model.Password" />
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mt-3">Sign Up</button>
+                        </EditForm>
+
+                        <div class="text-center mt-4">
+                            <small class="text-muted">Already have an account? <a href="/login">Login</a></small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public HttpContext HttpContext { get; set; }
+
+    [SupplyParameterFromForm]
+    public SignupModel model { get; set; } = new();
+
+    private string? errorMessage;
+    private bool isSuccess = false;
+    private bool showPassword = false;
+    private string passwordVisibleClass => showPassword ? "bi-eye" : "bi-eye-slash";
+
+    private async Task<bool> CheckIfUserNameAlreadyExist()
+    {
+        var response = await userAuthenticationService.DoesUserNameExistsAsync(model.UserName);
+
+        if (response.IsErrorOccured)
+        {
+            errorMessage = response.Message;
+            return true;
+        }
+
+        if (response.Result)
+        {
+            errorMessage = "Username already in use, try another one";
+            return true;
+        }
+
+        return false;
+    }
+
+    private async Task Register()
+    {
+        var usernameExists = await CheckIfUserNameAlreadyExist();
+        if (usernameExists)
+        {
+            return;
+        }
+
+        var response = await userAuthenticationService.CreateAccountAsync(new()
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                UserName = model.UserName,
+                Email = model.Email,
+                Password = model.Password
+            });
+
+        isSuccess = !response.IsErrorOccured;
+
+        if (!isSuccess)
+        {
+            errorMessage = response.Message;
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+}

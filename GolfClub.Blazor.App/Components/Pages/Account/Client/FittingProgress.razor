@@ -1,0 +1,92 @@
+﻿@page "/fitting-progress"
+@using GolfClub.BLL.Services.Files
+@using GolfClub.BLL.Services.Fittings
+@using GolfClub.DAL.Models
+@using GolfClub.BLL.Services.Authentication
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "User")]
+@attribute [StreamRendering]
+
+@inject IFittingService fittingService;
+@inject IUserAuthenticationService userAuthenticationService;
+@inject NavigationManager NavigationManager;
+
+<PageTitle>Fitting Progress</PageTitle>
+
+<div class="p-3">
+    <h2 class="text-success mb-3">Fitting Progress</h2>
+    <p class="mb-4">Track how your fitting requests are progressing</p>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">
+            @errorMessage
+        </div>
+    }
+    else if (fittings == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <table class="table table-hover fitting-table">
+            <thead class="">
+                <tr>
+                    <th>#</th>
+                    <th>Fitting Type</th>
+                    <th>Scheduled Date</th>
+                    <th>Scheduled Time</th>
+                    <th class="text-center">Status</th>
+                    <th>Received Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in fittings)
+                {
+                    <tr>
+                        <td>@rowNum</td>
+                        <td>@item.FittingType</td>
+                        <td>@item.ScheduledDate.ToShortDateString()</td>
+                        <td>@item.ScheduledDate.ToShortTimeString()</td>
+                        <td class="text-center">
+                            <span class="badge badge-@StringHelper.GetTaskStatusClass(item.Status.ToLower())">
+                                @item.Status
+                            </span>
+                        </td>
+                        <td>@item.RequestDate.ToShortDateString()</td>
+                    </tr>
+                    rowNum++;
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+
+    private List<Fitting> fittings = null!;
+    private string errorMessage = string.Empty;
+    private int rowNum = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await userAuthenticationService.GetUserId();
+
+        if (response.IsErrorOccured)
+        {
+            NavigationManager.NavigateTo("/Error");
+        }
+
+        var res = await fittingService.GetFittingInProgress(response.Result);
+
+        if (res.IsErrorOccured)
+        {
+            errorMessage = res.Message;
+            return;
+        }
+
+        fittings = res.Result.ToList();
+    }
+}

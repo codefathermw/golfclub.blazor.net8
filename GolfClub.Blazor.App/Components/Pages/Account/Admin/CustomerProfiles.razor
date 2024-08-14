@@ -1,0 +1,77 @@
+@page "/customer-profiles"
+@attribute [StreamRendering]
+
+@using GolfClub.BLL.Services.User_
+@using GolfClub.DAL.Models
+
+@inject IUserService userService
+@inject NavigationManager navigationManager
+
+<PageTitle>Customer Profiles</PageTitle>
+
+<div class="p-3">
+    <h2 class="text-success mb-3">Customer Profiles</h2>
+    <p class="mb-4">Below is a list of all customers that are registerd. Click view more option to view details.</p>
+
+    <div class="">
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @errorMessage
+            </div>
+        }
+        else if (users == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <div class="row">
+                @if (users.Count > 0) {
+                    @foreach (var item in users)
+                    {
+                        <div class="col-md-3">
+                            <div class="Card text-center border rounded px-3 py-4">
+                                <h1><i class="bi bi-person"></i></h1>
+                                <p>@StringHelper.NotAvail(@item.UserProfile.FirstName) @StringHelper.NotAvail(@item.UserProfile.LastName)</p>
+                                <a href="@($"/view-profile/{item.UserId}")" class="btn btn-outline-success btn-sm">Edit</a>                                
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>    
+</div>
+
+@code {
+
+    private List<UserAccount> users = null!;
+    private string errorMessage = string.Empty;
+    private int rowNum = 1;
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await userService.GetUserProfiles();
+
+        if (response.IsErrorOccured)
+        {
+            errorMessage = response.Message;
+            return;
+        }
+
+        users = response.Result.ToList();
+    }
+
+    private string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "pending" => "warning",
+            "confirmed" => "success",
+            "cancelled" => "danger",
+            "completed" => "success",
+            "scheduled" => "info",
+            _ => "success",
+        };
+    }
+}

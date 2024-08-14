@@ -1,0 +1,16 @@
+﻿@page "/swing-analysis"
+
+@using GolfClub.BLL.Services.Files
+@using GolfClub.BLL.Services.Fittings
+@using GolfClub.Blazor.App.Components.Shared
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "User")]
+
+@inject IFittingService fittingService
+@inject AuthenticationStateProvider authenticationStateProvider
+@inject NavigationManager navigationManager
+
+<SchedulerComponent 
+    Title="Schedule a Swing Analysis" 
+    TaskName="Swing Analysis" 
+    FittingType="swing-analysis" />
