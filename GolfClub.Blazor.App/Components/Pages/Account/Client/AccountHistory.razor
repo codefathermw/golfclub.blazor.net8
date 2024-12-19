@@ -74,14 +74,14 @@
     {
         var response = await userAuthenticationService.GetUserId();
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             NavigationManager.NavigateTo("/Error");
         }
 
         var res = await fittingService.GetFittingInProgress(response.Result);
 
-        if (res.IsErrorOccured)
+        if (res.IsErrorOccurred)
         {
             errorMessage = res.Message;
             return;

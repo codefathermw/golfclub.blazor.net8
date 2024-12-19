@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using GolfClub.BLL.DTOs;
-using GolfClub.BLL.Models;
+using GolfClub.BLL.Helpers;
 using GolfClub.BLL.Services.Password;
 using GolfClub.DAL.Context;
 using GolfClub.DAL.Models;
@@ -16,70 +12,44 @@ using Microsoft.Extensions.Logging;
 
 namespace GolfClub.BLL.Services.Authentication
 {
-    public class UserAuthenticationService(ILogger<UserAuthenticationService> logger, IRepository<UserAccount> userRepository, 
-        IRepository<UserProfile> userProfileRepository, AuthenticationStateProvider AuthenticationStateProvider) : IUserAuthenticationService
+    public class UserAuthenticationService(
+        ILogger<UserAuthenticationService> logger, 
+        IRepository<UserAccount> userRepository, 
+        IRepository<UserProfile> userProfileRepository, 
+        AuthenticationStateProvider AuthenticationStateProvider) : IUserAuthenticationService
     {
-        public ILogger<UserAuthenticationService> _logger = logger;
-        public IRepository<UserAccount> _userRepository = userRepository;
-        public IRepository<UserProfile> _userProfileRepository = userProfileRepository;
-
-        public async Task<ResponseModel<int>> GetUserId()
+        public async Task<BaseResponse<int>> GetUserId()
         {
             try
             {
                 var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
-                if (authState.User.Identity.IsAuthenticated)
+                if (authState.User.Identity!.IsAuthenticated)
                 {
                     var userId = authState.User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-                    return new ResponseModel<int>
-                    {
-                        IsErrorOccured = false,
-                        Result = Convert.ToInt32(userId)
-                    };
+                    return BaseResponseFactory.IsSuccess(Convert.ToInt32(userId));
                 }
 
-                return new ResponseModel<int>
-                {
-                    IsErrorOccured = true,
-                    Message = "UserId not found"
-                };
+                return BaseResponseFactory.IsError<int>("UserId not found");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Encountered an error");
-
-                return new ResponseModel<int>
-                {
-                    IsErrorOccured = true,
-                    Message = "An error occurred failed to get user id"
-                };
+                logger.LogError(ex, "Encountered an error");
+                return BaseResponseFactory.IsError<int>("An error occurred failed to get user id");
             }
         }
 
-        public async Task<ResponseModel<string>> CreateAccountAsync(UserAccountDto signupDto)
+        public async Task<BaseResponse<string>> CreateAccountAsync(UserAccountDto signupDto)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(signupDto.UserName) || string.IsNullOrWhiteSpace(signupDto.Password))
-                {
-                    return new ResponseModel<string>
-                    {
-                        IsErrorOccured = true,
-                        Message = "Username and password are required."
-                    };
-                }
+                    return BaseResponseFactory.IsError<string>("Username and password are required.");
 
-                var existingUser = await _userRepository.GetAsync(u => u.UserName == signupDto.UserName);
+                var existingUser = await userRepository.TryGetAsync(u => u.UserName == signupDto.UserName);
 
                 if (existingUser is not null)
-                {
-                    return new ResponseModel<string>
-                    {
-                        IsErrorOccured = true,
-                        Message = "Username already exists."
-                    };
-                }
+                    return BaseResponseFactory.IsError<string>("Username already exists.");
 
                 var hashedPassword = PasswordService.HashPassword(signupDto.Password);
 
@@ -90,8 +60,8 @@ namespace GolfClub.BLL.Services.Authentication
                     UserRoles = [ new () { RoleId = 2}]
                 };
 
-                var newUser = await _userRepository.AddAsync(user);
-                await _userRepository.SaveChangesAsync();
+                var newUser = await userRepository.AddAsync(user);
+                await userRepository.SaveChangesAsync();
 
                 var newProfile = new UserProfile
                 {
@@ -101,69 +71,44 @@ namespace GolfClub.BLL.Services.Authentication
                     LastName = signupDto.LastName,
                 };
 
-                await _userProfileRepository.AddAsync(newProfile);
-                await _userProfileRepository.SaveChangesAsync();
+                await userProfileRepository.AddAsync(newProfile);
+                await userProfileRepository.SaveChangesAsync();
 
-                return new ResponseModel<string>
-                {
-                    IsErrorOccured = false,
-                    Result = "Account created successfully."
-                };
+                return BaseResponseFactory.IsOk<string>();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating account for username {username}", signupDto.UserName);
-
-                return new ResponseModel<string>
-                {
-                    IsErrorOccured = true,
-                    Message = "An error occurred while creating the account."
-                };
+                logger.LogError(ex, "Error creating account for username {username}", signupDto.UserName);
+                return BaseResponseFactory.IsError<string>("An error occurred while creating the account.");
             }
         }
 
-        public async Task<ResponseModel<bool>> DoesUserNameExistsAsync(string userName)
+        public async Task<BaseResponse<bool>> DoesUserNameExistsAsync(string userName)
         {
             try
             {
-                var user = await _userRepository.GetAsync(u => u.UserName == userName);
-
-                return new ResponseModel<bool>
-                {
-                    IsErrorOccured = false,
-                    Result = user is not null
-                };
+                var user = await userRepository.TryGetAsync(u => u.UserName == userName);
+                return BaseResponseFactory.IsSuccess(user is not null);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error checking if username {username} exists", userName);
-
-                return new ResponseModel<bool>
-                {
-                    IsErrorOccured = true,
-                    Message = "An error occurred while checking the username."
-                };
+                logger.LogError(ex, "Error checking if username {username} exists", userName);
+                return BaseResponseFactory.IsError<bool>("An error occurred while checking the username.");
             }
         }
 
-        public async Task<ResponseModel<ClaimsIdentity>> LoginAsync(LoginDto loginDto)
+        public async Task<BaseResponse<ClaimsIdentity>> LoginAsync(LoginDto loginDto)
         {
             try
             {
-                var db = _userRepository.GetContext<AppDbContext>();
+                var db = userRepository.GetContext<AppDbContext>();
                 var user = await db.Users
                     .Include(u => u.UserRoles)
                         .ThenInclude(ur => ur.Role)
                     .FirstOrDefaultAsync(u => u.UserName == loginDto.Username);
 
                 if (user is null || !PasswordService.VerifyPassword(user.PasswordHash, loginDto.Password))
-                {
-                    return new ResponseModel<ClaimsIdentity>
-                    {
-                        IsErrorOccured = true,
-                        Message = "Incorrect credentials provided"
-                    };
-                }
+                    return BaseResponseFactory.IsError<ClaimsIdentity>("Incorrect credentials provided");
 
                 var claims = new List<Claim>
                 {
@@ -172,13 +117,7 @@ namespace GolfClub.BLL.Services.Authentication
                 };
 
                 if (user.UserRoles.Count == 0)
-                {
-                    return new ResponseModel<ClaimsIdentity>
-                    {
-                        IsErrorOccured = true,
-                        Message = "Failed to identify user roles"
-                    };
-                }
+                    return BaseResponseFactory.IsError<ClaimsIdentity>("Failed to identify user roles");
 
                 foreach (var userRole in user.UserRoles)
                 {
@@ -187,21 +126,26 @@ namespace GolfClub.BLL.Services.Authentication
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
-                return new ResponseModel<ClaimsIdentity>
-                {
-                    IsErrorOccured = false,
-                    Result = claimsIdentity
-                };
+                return BaseResponseFactory.IsSuccess(claimsIdentity);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception occurred during login with username {Username}", loginDto.Username);
+                logger.LogError(ex, "Exception occurred during login with username {Username}", loginDto.Username);
+                return BaseResponseFactory.IsError<ClaimsIdentity>("An error occurred, failed to login.");
+            }
+        }
 
-                return new ResponseModel<ClaimsIdentity>
-                {
-                    IsErrorOccured = true,
-                    Message = "An error occurred, failed to login."
-                };
+        public async Task<BaseResponse<bool>> DoesEmailExistsAsync(string email)
+        {
+            try
+            {
+                var user = await userProfileRepository.TryGetAsync(u => u.Email == email);
+                return BaseResponseFactory.IsSuccess(user is not null);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error checking if email {email} exists", email);
+                return BaseResponseFactory.IsError<bool>("An error occurred while checking the email.");
             }
         }
     }

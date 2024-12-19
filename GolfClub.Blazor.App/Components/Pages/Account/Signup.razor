@@ -1,10 +1,6 @@
 ﻿@page "/signup"
-
-@using GolfClub.BLL.Models
+@using GolfClub.BLL.Models.Domain
 @using GolfClub.BLL.Services.Authentication
-@using System.Security.Claims
-@using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Authentication.Cookies
 
 @inject IUserAuthenticationService userAuthenticationService
 @inject NavigationManager navigationManager
@@ -85,18 +81,18 @@
     public HttpContext HttpContext { get; set; }
 
     [SupplyParameterFromForm]
-    public SignupModel model { get; set; } = new();
+    public SignupFormModel model { get; set; } = new();
 
     private string? errorMessage;
     private bool isSuccess = false;
     private bool showPassword = false;
     private string passwordVisibleClass => showPassword ? "bi-eye" : "bi-eye-slash";
 
-    private async Task<bool> CheckIfUserNameAlreadyExist()
+    private async Task<bool> ValidateAsync()
     {
         var response = await userAuthenticationService.DoesUserNameExistsAsync(model.UserName);
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             errorMessage = response.Message;
             return true;
@@ -104,7 +100,21 @@
 
         if (response.Result)
         {
-            errorMessage = "Username already in use, try another one";
+            errorMessage = "Username already in use, please try another one";
+            return true;
+        }
+
+        response = await userAuthenticationService.DoesEmailExistsAsync(model.Email);
+
+        if (response.IsErrorOccurred)
+        {
+            errorMessage = response.Message;
+            return true;
+        }
+
+        if (response.Result)
+        {
+            errorMessage = "Email already in use, please try another one";
             return true;
         }
 
@@ -113,11 +123,8 @@
 
     private async Task Register()
     {
-        var usernameExists = await CheckIfUserNameAlreadyExist();
-        if (usernameExists)
-        {
+        if (await ValidateAsync())
             return;
-        }
 
         var response = await userAuthenticationService.CreateAccountAsync(new()
             {
@@ -128,7 +135,7 @@
                 Password = model.Password
             });
 
-        isSuccess = !response.IsErrorOccured;
+        isSuccess = !response.IsErrorOccurred;
 
         if (!isSuccess)
         {

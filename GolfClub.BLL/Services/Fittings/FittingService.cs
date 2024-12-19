@@ -1,5 +1,6 @@
 using GolfClub.BLL.DTOs;
-using GolfClub.BLL.Models;
+using GolfClub.BLL.Enums;
+using GolfClub.BLL.Helpers;
 using GolfClub.DAL.Context;
 using GolfClub.DAL.Models;
 using GolfClub.DAL.Repositories;
@@ -8,18 +9,17 @@ using Microsoft.Extensions.Logging;
 
 namespace GolfClub.BLL.Services.Fittings
 {
-    public class FittingService(ILogger<FittingService> logger, IRepository<Fitting> fittingRepository) : IFittingService
+    public class FittingService(
+        ILogger<FittingService> logger, 
+        IRepository<Fitting> fittingRepository) : IFittingService
     {
-        private readonly ILogger _logger = logger;
-        private readonly IRepository<Fitting> _fittingRepository = fittingRepository;
-
         static IEnumerable<TimeSpan> GetFreeSlots(List<TimeSpan> times, List<DateTime> dateTimes)
         {
             var timeSpans = dateTimes.Select(dt => dt.TimeOfDay);
             return times.Where(t => !timeSpans.Contains(t));
         }
 
-        public async Task<ResponseModel<IEnumerable<TimeSpan>>> GetAvailableTimeSlot(DateTime date)
+        public async Task<BaseResponse<IEnumerable<TimeSpan>>> GetAvailableTimeSlot(DateTime date)
         {
             try
             {
@@ -33,111 +33,75 @@ namespace GolfClub.BLL.Services.Fittings
                     new (15, 0, 0)
                 };
 
-                var result = await _fittingRepository.GetAllAsync(u => u.ScheduledDate.Date.Equals(date.Date) && u.Status != "cancelled");
+                var result = await fittingRepository.GetAllAsync(u => u.ScheduledDate.Date.Equals(date.Date) && u.Status != "cancelled");
 
                 if (result is not null)
                 {
                     var freeSlots = GetFreeSlots(slots, result.Select(u => u.ScheduledDate).ToList());
 
-                    return new ResponseModel<IEnumerable<TimeSpan>>
-                    {
-                        IsErrorOccured = false,
-                        Result = freeSlots
-                    };
+                    return BaseResponseFactory.IsSuccess(freeSlots);
                 }
 
-                return new ResponseModel<IEnumerable<TimeSpan>>
-                {
-                    IsErrorOccured = false,
-                    Result = slots
-                };
+                return BaseResponseFactory.IsSuccess<IEnumerable<TimeSpan>>(slots);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Encountered an error while getting available time slots");
+                logger.LogError(ex, "Encountered an error while getting available time slots");
 
-                return new ResponseModel<IEnumerable<TimeSpan>>
-                {
-                    IsErrorOccured = true,
-                    Message = "Encountered an error while getting available time slots."
-                };
+                return BaseResponseFactory.IsError<IEnumerable<TimeSpan>>("Encountered an error while getting available time slots.");
             }
         }
 
-        public async Task<ResponseModel<IEnumerable<Fitting>>> GetFittingInProgress(int userId)
+        public async Task<BaseResponse<IEnumerable<Fitting>>> GetFittingInProgress(int userId)
         {
             try
             {
-                var result = await _fittingRepository.GetAllAsync(u => u.UserId == userId);
+                var result = await fittingRepository.GetAllAsync(u => u.UserId == userId);
 
-                return new ResponseModel<IEnumerable<Fitting>>
-                {
-                    IsErrorOccured = false,
-                    Result = result
-                };
+                return BaseResponseFactory.IsSuccess(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Encountered an error");
+                logger.LogError(ex, "Encountered an error");
 
-                return new ResponseModel<IEnumerable<Fitting>>
-                {
-                    IsErrorOccured = true,
-                    Message = "Encountered an error"
-                };
+                return BaseResponseFactory.IsError<IEnumerable<Fitting>>();
             }
         }
 
-        public async Task<ResponseModel<IEnumerable<Fitting>>> GetFittingRequest()
+        public async Task<BaseResponse<IEnumerable<Fitting>>> GetFittingRequest()
         {
             try
             {
-                var db = _fittingRepository.GetContext<AppDbContext>();
-                var result = await db.FittingRequests.Include(u => u.User).ThenInclude(ur => ur.UserProfile).ToListAsync();
+                var db = fittingRepository.GetContext<AppDbContext>();
+                var result = await db!.FittingRequests.Include(u => u.User).ThenInclude(ur => ur.UserProfile).ToListAsync();
                 
-                return new ResponseModel<IEnumerable<Fitting>>
-                {
-                    IsErrorOccured = false,
-                    Result = result
-                };
+                return BaseResponseFactory.IsSuccess<IEnumerable<Fitting>>(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Encountered an error");
+                logger.LogError(ex, "Encountered an error");
 
-                return new ResponseModel<IEnumerable<Fitting>>
-                {
-                    IsErrorOccured = true,
-                    Message = "Encountered an error"
-                };
+                return BaseResponseFactory.IsError<IEnumerable<Fitting>>();
             }
         }
 
-        public async Task<ResponseModel<IEnumerable<Fitting>>> GetMonthlyFittingsAsync(DateTime dateTime)
+        public async Task<BaseResponse<IEnumerable<Fitting>>> GetMonthlyFittingsAsync(DateTime dateTime)
         {
             try
             {
-                var result = await _fittingRepository.GetAllAsync(u => u.ScheduledDate.Month.Equals(dateTime.Month) && u.ScheduledDate.Year.Equals(dateTime.Year));
+                var result = await fittingRepository.GetAllAsync(u => u.ScheduledDate.Month.Equals(dateTime.Month) && u.ScheduledDate.Year.Equals(dateTime.Year));
 
-                return new ResponseModel<IEnumerable<Fitting>>
-                {
-                    IsErrorOccured = false,
-                    Result = result 
-                };
+                return BaseResponseFactory.IsSuccess(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error enountered");
+                logger.LogError(ex, "An error encountered");
 
-                return new ResponseModel<IEnumerable<Fitting>>
-                {
-                    IsErrorOccured = true,
-                    Message = $"An error encountered"
-                };
+                return BaseResponseFactory.IsError<IEnumerable<Fitting>>();
             }
         }
 
-        public async Task<ResponseModel<bool>> SaveFittingRequest(SaveFittingRequestDto saveFittingRequestDto)
+        public async Task<BaseResponse<bool>> SaveFittingRequest(SaveFittingRequestDto saveFittingRequestDto)
         {
             try
             {
@@ -147,53 +111,39 @@ namespace GolfClub.BLL.Services.Fittings
                     FittingType = saveFittingRequestDto.FittingType,
                     RequestDate = DateTime.Now,
                     ScheduledDate = saveFittingRequestDto.ScheduledDate,
-                    Status = StatusConstants.Pending,
+                    Status = StatusEnum.Pending.ToString(),
                     UserId = saveFittingRequestDto.UserId
                 };
 
-                await _fittingRepository.AddAsync(entity);
-                await _fittingRepository.SaveChangesAsync();
+                await fittingRepository.AddAsync(entity);
+                await fittingRepository.SaveChangesAsync();
 
-                return new ResponseModel<bool>
-                {
-                    IsErrorOccured = false,
-                };
+                return BaseResponseFactory.IsOk<bool>();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Encountered an error while saving {name} request", saveFittingRequestDto.FittingType);
+                logger.LogError(ex, "Encountered an error while saving {name} request", saveFittingRequestDto.FittingType);
 
-                return new ResponseModel<bool>
-                {
-                    IsErrorOccured = true,
-                    Message = $"Encountered an error while saving {saveFittingRequestDto.FittingType} request"
-                };
+                return BaseResponseFactory.IsError<bool>($"Encountered an error while saving {saveFittingRequestDto.FittingType} request");
             }
         }
 
-        public async Task<ResponseModel<bool>> UpdateFittingStatus(int fittingId, string fittingStatus)
+        public async Task<BaseResponse<bool>> UpdateFittingStatus(int fittingId, string fittingStatus)
         {
             try
             {
-                var result = await _fittingRepository.GetByIdAsync(fittingId);
-                result.Status = fittingStatus;
-                _fittingRepository.Update(result);
-                await _fittingRepository.SaveChangesAsync();
+                var result = await fittingRepository.TryGetByIdAsync(fittingId);
+                result!.Status = fittingStatus;
+                fittingRepository.Update(result);
+                await fittingRepository.SaveChangesAsync();
 
-                return new ResponseModel<bool>
-                {
-                    IsErrorOccured = false,
-                };
+                return BaseResponseFactory.IsOk<bool>();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Encountered an error while updating fitting status");
+                logger.LogError(ex, "Encountered an error while updating fitting status");
 
-                return new ResponseModel<bool>
-                {
-                    IsErrorOccured = true,
-                    Message = "Encountered an error while updating fitting status"
-                };
+                return BaseResponseFactory.IsError<bool>("Encountered an error while updating fitting status");
             }
         }
     }

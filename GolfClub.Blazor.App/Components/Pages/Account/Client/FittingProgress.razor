@@ -1,9 +1,8 @@
 ﻿@page "/fitting-progress"
-@using GolfClub.BLL.Services.Files
+@using GolfClub.BLL.Helpers
+@using GolfClub.BLL.Services.Authentication
 @using GolfClub.BLL.Services.Fittings
 @using GolfClub.DAL.Models
-@using GolfClub.BLL.Services.Authentication
-@using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authorization
 
 @attribute [Authorize(Roles = "User")]
@@ -74,14 +73,14 @@
     {
         var response = await userAuthenticationService.GetUserId();
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             NavigationManager.NavigateTo("/Error");
         }
 
         var res = await fittingService.GetFittingInProgress(response.Result);
 
-        if (res.IsErrorOccured)
+        if (res.IsErrorOccurred)
         {
             errorMessage = res.Message;
             return;

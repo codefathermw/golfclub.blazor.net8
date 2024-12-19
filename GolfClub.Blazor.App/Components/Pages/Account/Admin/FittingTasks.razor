@@ -53,7 +53,7 @@ else
         {
             var response = await fittingService.UpdateFittingStatus(RequestId.Value, status);
 
-            if (response.IsErrorOccured)
+            if (response.IsErrorOccurred)
             {
                 errorMessage = response.Message;
                 return;

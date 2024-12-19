@@ -1,6 +1,5 @@
 @page "/fitting-history"
-
-@using GolfClub.BLL.Services.Files
+@using GolfClub.BLL.Helpers
 @using GolfClub.BLL.Services.Fittings
 @using GolfClub.DAL.Models
 @using Microsoft.AspNetCore.Authorization
@@ -77,7 +76,7 @@
     {
         var response = await fittingService.GetFittingRequest();
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             errorMessage = response.Message;
             return;

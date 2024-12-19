@@ -46,7 +46,7 @@
     {
         var response = await fileService.LoadContentFromFileAsync();
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             NavigationManager.NavigateTo("/Error");
         }
@@ -58,7 +58,7 @@
     {
         var response = await fileService.SaveContentToFileAsync(paragraphText);
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             errorMessage = response.Message;
             return;

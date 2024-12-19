@@ -1,15 +1,10 @@
-public static class StringHelper{
-    public static object NotAvail(object input) {
-        if (input is null) {
-            return "N/A";
-        }
-
-        return input;
-    }
-
-    public static string GetTaskStatusClass(string status)
+namespace GolfClub.BLL.Helpers
+{
+    public static class StringHelper
     {
-        return status switch
+        public static object NotAvail(object input) => input ?? "N/A";
+
+        public static string GetTaskStatusClass(string status) => status?.ToLowerInvariant() switch
         {
             "acknowledged" => "primary",
             "prepped" => "info",
@@ -20,11 +15,8 @@ public static class StringHelper{
             "completed" => "success",
             _ => "light",
         };
-    }
 
-    public static (string CssClass, string Icon) GetTaskStatusInfo(string status)
-    {
-        return status switch
+        public static (string CssClass, string Icon) GetTaskStatusInfo(string status) => status?.ToLowerInvariant() switch
         {
             "acknowledged" => ("primary", "bi-check-circle"),
             "prepped" => ("info", "bi-hourglass-split"),
@@ -36,5 +28,4 @@ public static class StringHelper{
             _ => ("light", "bi-question-circle"),
         };
     }
-
 }

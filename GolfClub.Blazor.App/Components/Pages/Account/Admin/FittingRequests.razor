@@ -79,7 +79,7 @@
     {
         var response = await fittingService.GetFittingRequest();
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             errorMessage = response.Message;
             return;

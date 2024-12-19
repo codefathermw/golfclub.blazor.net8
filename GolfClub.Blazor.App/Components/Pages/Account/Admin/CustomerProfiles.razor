@@ -1,8 +1,8 @@
 @page "/customer-profiles"
-@attribute [StreamRendering]
-
-@using GolfClub.BLL.Services.User_
+@using GolfClub.BLL.Helpers
+@using GolfClub.BLL.Services.Users
 @using GolfClub.DAL.Models
+@attribute [StreamRendering]
 
 @inject IUserService userService
 @inject NavigationManager navigationManager
@@ -11,7 +11,7 @@
 
 <div class="p-3">
     <h2 class="text-success mb-3">Customer Profiles</h2>
-    <p class="mb-4">Below is a list of all customers that are registerd. Click view more option to view details.</p>
+    <p class="mb-4">Below is a list of all customers that are registered. Click view more option to view details.</p>
 
     <div class="">
         @if (!string.IsNullOrEmpty(errorMessage))
@@ -53,7 +53,7 @@
     {
         var response = await userService.GetUserProfiles();
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             errorMessage = response.Message;
             return;

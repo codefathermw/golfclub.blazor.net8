@@ -1,8 +1,7 @@
 ﻿@page "/login"
-
-@using GolfClub.BLL.Models
-@using GolfClub.BLL.Services.Authentication
+@using GolfClub.BLL.Models.Domain
 @using System.Security.Claims
+@using GolfClub.BLL.Services.Authentication
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authentication.Cookies
 
@@ -54,7 +53,7 @@
 
 @code {
     [SupplyParameterFromForm]
-    public LoginModel model { get; set; } = new();
+    public LoginFormModel model { get; set; } = new();
 
     private string? errorMessage;
 
@@ -66,7 +65,7 @@
                 Password = model.Password
             });
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             errorMessage = response.Message;
             return;

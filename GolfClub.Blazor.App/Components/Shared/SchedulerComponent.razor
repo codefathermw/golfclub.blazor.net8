@@ -154,7 +154,7 @@
 
         var response = await FittingService.GetAvailableTimeSlot(selectedDate.Value);
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             validationError = response.Message;
             return;
@@ -206,7 +206,7 @@
 
         var response = await FittingService.SaveFittingRequest(saveFittingRequestDto);
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             validationError = response.Message;
             return;

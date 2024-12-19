@@ -1,70 +1,42 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using GolfClub.BLL.Models;
+using GolfClub.BLL.Helpers;
 using Microsoft.Extensions.Logging;
 
 namespace GolfClub.BLL.Services.Files
 {
     public class FileService(ILogger<FileService> logger) : IFileService
     {
-        private readonly ILogger<FileService> _logger = logger;
-
-        public async Task<ResponseModel<string>> SaveContentToFileAsync(string content)
+        public async Task<BaseResponse<string>> SaveContentToFileAsync(string content)
         {
             try
             {
                 var filePath = Path.Combine("wwwroot", "files", "paragraph.html");
                 await File.WriteAllTextAsync(filePath, content);
 
-                return new ResponseModel<string>()
-                {
-                    IsErrorOccured = false,
-                };
+                return BaseResponseFactory.IsOk<string>();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Encountered an exception");
+                logger.LogError(ex, "Encountered an exception");
 
-                return new ResponseModel<string>()
-                {
-                    IsErrorOccured = true,
-                    Message = "An error occurred, failed to save contents to file"
-                };
+                return BaseResponseFactory.IsError<string>("An error occurred, failed to save contents to file");
             }
         }
 
-        public async Task<ResponseModel<string>> LoadContentFromFileAsync()
+        public async Task<BaseResponse<string>> LoadContentFromFileAsync()
         {
             try
             {
                 var filePath = Path.Combine("wwwroot", "files", "paragraph.html");
 
                 if (File.Exists(filePath))
-                {
-                    return new ResponseModel<string>()
-                    {
-                        IsErrorOccured = false,
-                        Result = await File.ReadAllTextAsync(filePath)
-                    };
-                }
+                    return BaseResponseFactory.IsSuccess(await File.ReadAllTextAsync(filePath));
 
-                return new ResponseModel<string>()
-                {
-                    IsErrorOccured = false,
-                    Result = "<p>No content available.</p>"
-                };
+                return BaseResponseFactory.IsError<string>("<p>No content available.</p>");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Encountered an exception");
-
-                return new ResponseModel<string>()
-                {
-                    IsErrorOccured = true,
-                    Message = "An error occurred, failed to save contents to file"
-                };
+                logger.LogError(ex, "Encountered an exception");
+                return BaseResponseFactory.IsError<string>("An error occurred, failed to save contents to file");
             }
         }
     }

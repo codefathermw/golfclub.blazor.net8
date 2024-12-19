@@ -1,18 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using GolfClub.BLL.DTOs;
-using GolfClub.BLL.Models;
+using GolfClub.BLL.Helpers;
 
 namespace GolfClub.BLL.Services.Authentication
 {
     public interface IUserAuthenticationService
     {
-        Task<ResponseModel<ClaimsIdentity>> LoginAsync(LoginDto loginDto);
-        Task<ResponseModel<string>> CreateAccountAsync(UserAccountDto signupDto);
-        Task<ResponseModel<bool>> DoesUserNameExistsAsync(string userName);
-        Task<ResponseModel<int>> GetUserId();
+        Task<BaseResponse<ClaimsIdentity>> LoginAsync(LoginDto loginDto);
+        Task<BaseResponse<string>> CreateAccountAsync(UserAccountDto signupDto);
+        Task<BaseResponse<bool>> DoesUserNameExistsAsync(string userName);
+        Task<BaseResponse<bool>> DoesEmailExistsAsync(string userName);
+        Task<BaseResponse<int>> GetUserId();
     }
 }

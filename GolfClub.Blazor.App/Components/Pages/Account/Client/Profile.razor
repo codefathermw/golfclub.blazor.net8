@@ -18,7 +18,7 @@
     {
         var response = await userAuthenticationService.GetUserId();
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             NavigationManager.NavigateTo("/Error");
         }

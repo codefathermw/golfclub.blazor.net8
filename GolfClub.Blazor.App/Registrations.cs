@@ -1,7 +1,7 @@
 ﻿using GolfClub.BLL.Services.Authentication;
 using GolfClub.BLL.Services.Files;
 using GolfClub.BLL.Services.Fittings;
-using GolfClub.BLL.Services.User_;
+using GolfClub.BLL.Services.Users;
 using GolfClub.DAL.Models;
 using GolfClub.DAL.Repositories;
 

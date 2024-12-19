@@ -90,7 +90,7 @@
 
         var response = await fittingService.GetMonthlyFittingsAsync(currentMonth);
 
-        if (response.IsErrorOccured)
+        if (response.IsErrorOccurred)
         {
             navigationManager.NavigateTo("/Error");
             return;

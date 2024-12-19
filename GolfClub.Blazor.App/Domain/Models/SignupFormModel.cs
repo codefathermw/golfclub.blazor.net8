@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace GolfClub.BLL.Models
+namespace GolfClub.BLL.Models.Domain
 {
-    public class SignupModel
+    public class SignupFormModel
     {
         [Required(AllowEmptyStrings = false, ErrorMessage = "Please enter your first name.")]
         public string FirstName { get; set; } = string.Empty;
@@ -25,5 +21,4 @@ namespace GolfClub.BLL.Models
         [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long.")]
         public string Password { get; set; } = string.Empty;
     }
-
 }
