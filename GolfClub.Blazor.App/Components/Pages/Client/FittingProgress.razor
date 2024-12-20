@@ -46,11 +46,11 @@
                 {
                     <tr>
                         <td>@rowNum</td>
-                        <td>@UiHelper.Normalize(item.FittingType)</td>
+                        <td>@UIHelper.Normalize(item.FittingType)</td>
                         <td class="text-center">@item.ScheduledDate.ToString("dd-MM-yyyy")</td>
                         <td class="text-center">@item.ScheduledDate.ToString("dd-MM-yyyy")</td>
                         <td class="text-center">
-                            <span class="badge rounded-pill bg-@UiHelper.GetTaskStatusClass(item.Status)">
+                            <span class="badge rounded-pill bg-@UIHelper.GetTaskStatusClass(item.Status)">
                                 @item.Status
                             </span>
                         </td>

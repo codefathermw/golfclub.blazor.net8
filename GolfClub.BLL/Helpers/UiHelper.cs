@@ -2,7 +2,7 @@ using GolfClub.BLL.Enums;
 
 namespace GolfClub.BLL.Helpers
 {
-    public static class UiHelper
+    public static class UIHelper
     {
         public static object NotAvail(object input) => input ?? "N/A";
 
@@ -19,21 +19,6 @@ namespace GolfClub.BLL.Helpers
                     _ => "light",
                 }
                 : "light";
-
-        public static (string CssClass, string Icon) GetTaskStatusInfo(string status) =>
-            Enum.TryParse(status, true, out StatusEnum statusEnum)
-                ? statusEnum switch
-                {
-                    StatusEnum.Acknowledged => ("primary", "bi-check-circle"),
-                    StatusEnum.Prepped => ("info", "bi-hourglass-split"),
-                    StatusEnum.Scheduled => ("warning", "bi-calendar-event"),
-                    StatusEnum.Cancelled => ("danger", "bi-x-circle"),
-                    StatusEnum.Suspended => ("secondary", "bi-pause-circle"),
-                    StatusEnum.Pending => ("light", "bi-hourglass"),
-                    StatusEnum.Completed => ("success", "bi-check2-circle"),
-                    _ => ("light", "bi-question-circle"),
-                }
-                : ("light", "bi-question-circle");
 
         public static string Normalize(string input)
         {

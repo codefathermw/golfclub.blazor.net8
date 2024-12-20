@@ -1,5 +1,6 @@
 ﻿@page "/account-history"
 
+@using GolfClub.BLL.Helpers
 @using GolfClub.BLL.Services.Files
 @using GolfClub.BLL.Services.Fittings
 @using GolfClub.DAL.Models
@@ -37,8 +38,8 @@
                 <tr>
                     <th>#</th>
                     <th>Fitting Type</th>
-                    <th>Scheduled Date</th>
-                    <th>Scheduled Time</th>
+                    <th class="text-center">Scheduled Date</th>
+                    <th class="text-center">Scheduled Time</th>
                     <th class="text-center">Status</th>
                     <th>Received Date</th>
                 </tr>
@@ -49,14 +50,14 @@
                     <tr>
                         <td>@rowNum</td>
                         <td>@item.FittingType</td>
-                        <td>@item.ScheduledDate.ToShortDateString()</td>
-                        <td>@item.ScheduledDate.ToShortTimeString()</td>
+                        <td class="text-center">@item.ScheduledDate.ToString("dd-MM-yyyy")</td>
+                        <td class="text-center">@item.ScheduledDate.ToString("hh:mm tt")</td>
                         <td class="text-center">
-                            <span class="badge badge-@GetStatusBadgeClass(item.Status.ToLower())">
+                            <span class="badge badge-@UIHelper.GetStatusBadgeClass(item.Status.ToLower())">
                                 @item.Status
                             </span>
                         </td>
-                        <td>@item.RequestDate.ToShortDateString()</td>
+                        <td>@item.RequestDate.ToString("dd-MM-yyy HH:mm")</td>
                     </tr>
                     rowNum++;
                 }
@@ -66,7 +67,6 @@
 </div>
 
 @code {
-
     private List<Fitting> fittings = null!;
     private string errorMessage = string.Empty;
     private int rowNum = 1;
@@ -88,18 +88,5 @@
         }
 
         fittings = res.Result.ToList();
-    }
-
-    private string GetStatusBadgeClass(string status)
-    {
-        return status switch
-        {
-            "pending" => "warning",
-            "confirmed" => "success",
-            "cancelled" => "danger",
-            "completed" => "success",
-            "scheduled" => "info",
-            _ => "success",
-        };
     }
 }
