@@ -1,0 +1,48 @@
+﻿<div class="modal @ModalVisibility" tabindex="-1" style="display: @DisplayStyle;" role="dialog" aria-hidden="true">
+    <div class="col-12 p-5" style="background: #00000080; height: 100vh; width: 100%; pointer-events: none;">
+        <div class="mx-auto col-5">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@Title</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    @BodyContent
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                    @FooterContent
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Modal Title";
+    [Parameter] public RenderFragment? BodyContent { get; set; }
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public bool IsVisible { get; set; } = false;
+    private string ModalVisibility => IsVisible ? "show" : string.Empty;
+    private string DisplayStyle => IsVisible ? "block" : "none";
+
+    public void Show()
+    {
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+    private async Task CloseModal()
+    {
+        IsVisible = false;
+        await OnClose.InvokeAsync();
+        StateHasChanged();
+    }
+}

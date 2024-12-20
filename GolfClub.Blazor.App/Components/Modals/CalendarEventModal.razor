@@ -1,0 +1,44 @@
+﻿@using GolfClub.BLL.Helpers
+@using GolfClub.DAL.Models
+<ModalComponent IsVisible="@IsVisible" Title="Fitting Schedule">
+    <BodyContent>
+        @if (SelectedFitting is null)
+        {
+            <p>Please wait...</p>
+        }
+        else
+        {
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <strong>Fitting:</strong> <br /> @SelectedFitting.ReferenceNumber (@UiHelper.Normalize(SelectedFitting.FittingType))
+                </div>
+                <div class="col-6 mb-3">
+                    <strong>Scheduled Date:</strong> <br /> @SelectedFitting.ScheduledDate.ToString("dd-MM-yyyy")
+                </div>
+                <div class="col-6 mb-3">
+                    <strong>Scheduled Time:</strong> <br /> @SelectedFitting.ScheduledDate.ToString("HH:mm tt")
+                </div>
+                <div class="col-6 mb-3">
+                    <strong>Submitted By:</strong> <br /> @SelectedFitting.User.UserProfile.FirstName @SelectedFitting.User.UserProfile.LastName
+                </div>
+                <div class="col-6 mb-3">
+                    <strong>Submitted On:</strong> <br /> @SelectedFitting.RequestDate.ToString("dd-MM-yyyy HH:mm")
+                </div>
+                <div class="col-12">
+                    <strong>Status:</strong> <br />
+                    <span class="badge rounded-pill bg-@UiHelper.GetTaskStatusClass(SelectedFitting.Status)">
+                        @SelectedFitting.Status
+                    </span>
+                </div>
+            </div>            
+        }
+    </BodyContent>
+    <FooterContent />
+</ModalComponent>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+    [Parameter]
+    public Fitting SelectedFitting { get; set; }
+}

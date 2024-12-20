@@ -1,0 +1,81 @@
+﻿@using GolfClub.BLL.Helpers
+@using GolfClub.BLL.Models.Domain
+@using GolfClub.BLL.Services.Users
+@using GolfClub.Blazor.App.Domain.Models
+@using GolfClub.DAL.Models
+
+@inject IUserService userService;
+
+<p class="mb-4">Update personal details here</p>
+
+<EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="mb-3">
+            <label for="first-name" class="form-label">First Name</label>
+            <InputText id="first-name" class="form-control" @bind-Value="model.FirstName" />
+            <ValidationMessage For="@(() => model.FirstName)" />
+        </div>
+        <div class="mb-3">
+            <label for="last-name" class="form-label">Last Name</label>
+            <InputText id="last-name" class="form-control" @bind-Value="model.LastName" />
+            <ValidationMessage For="@(() => model.LastName)" />
+        </div>
+        <div class="mb-3">
+            <label for="dob" class="form-label">Date Of Birth</label>
+            <InputDate id="dob" class="form-control" @bind-Value="model.DateOfBirth" />
+            <ValidationMessage For="@(() => model.DateOfBirth)" />
+        </div>
+        <div class="mb-3">
+            <label for="address" class="form-label">Physical Address</label>
+            <InputText id="address" class="form-control" @bind-Value="model.Address" />
+            <ValidationMessage For="@(() => model.Address)" />
+        </div>
+        <div class="mb-3">
+            <label for="golfclub" class="form-label">Golf Club Size</label>
+            <InputText id="golfclub" class="form-control" @bind-Value="model.GolfClubSize" />
+            <ValidationMessage For="@(() => model.GolfClubSize)" />
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public UserProfile UserProfile { get; set; }
+    [SupplyParameterFromForm]
+    private UpdateProfileModel model { get; set; } = new();
+    private EditContext editContext;
+
+    protected override void OnInitialized()
+    {
+        model = new()
+            {
+                GolfClubSize = UserProfile.GolfClubSize ?? "10",
+                DateOfBirth = UserProfile.DateOfBirth,
+                FirstName = UserProfile.FirstName,
+                LastName = UserProfile.LastName,
+                Address = UserProfile.Address
+            };
+        editContext = new EditContext(model);
+    }
+
+    public async Task<BaseResponse<string>?> HandleValidSubmit()
+    {
+        editContext?.Validate(); 
+
+        var validationMessages = editContext?.GetValidationMessages();
+
+        if (validationMessages is null || !validationMessages.Any())
+        {
+            UserProfile.Address = model.Address;
+            UserProfile.FirstName = model.FirstName;
+            UserProfile.LastName = model.LastName;
+            UserProfile.DateOfBirth = model.DateOfBirth;
+            UserProfile.GolfClubSize = model.GolfClubSize;
+
+            return await userService.UpdateProfileAsync(UserProfile);
+        }
+
+        return null;
+    }
+}

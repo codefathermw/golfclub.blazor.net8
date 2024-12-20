@@ -152,7 +152,7 @@
             return;
         }
 
-        var response = await FittingService.GetAvailableTimeSlot(selectedDate.Value);
+        var response = await FittingService.GetAvailableTimeSlotAsync(selectedDate.Value);
 
         if (response.IsErrorOccurred)
         {
@@ -204,7 +204,7 @@
             UserId = Convert.ToInt32(userId)
         };
 
-        var response = await FittingService.SaveFittingRequest(saveFittingRequestDto);
+        var response = await FittingService.SaveFittingRequestAsync(saveFittingRequestDto);
 
         if (response.IsErrorOccurred)
         {

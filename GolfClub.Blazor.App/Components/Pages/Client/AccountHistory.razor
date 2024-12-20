@@ -79,7 +79,7 @@
             NavigationManager.NavigateTo("/Error");
         }
 
-        var res = await fittingService.GetFittingInProgress(response.Result);
+        var res = await fittingService.GetFittingInProgressAsync(response.Result);
 
         if (res.IsErrorOccurred)
         {

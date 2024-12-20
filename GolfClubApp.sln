@@ -3,25 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GolfClub.BLL", "GolfClub.BLL\GolfClub.BLL.csproj", "{4B964D6A-19F8-472D-A906-5C98A58E2533}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GolfClub.BLL", "GolfClub.BLL\GolfClub.BLL.csproj", "{4B964D6A-19F8-472D-A906-5C98A58E2533}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GolfClub.DAL", "GolfClub.DAL\GolfClub.DAL.csproj", "{8667E6C6-35E1-4D8D-8548-A7BCCDED08E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GolfClub.DAL", "GolfClub.DAL\GolfClub.DAL.csproj", "{8667E6C6-35E1-4D8D-8548-A7BCCDED08E0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GolfClub.Blazor.App", "GolfClub.Blazor.App\GolfClub.Blazor.App.csproj", "{24942982-CA86-4D04-B8A7-8D3A27ABA95E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GolfClub.Blazor.App", "GolfClub.Blazor.App\GolfClub.Blazor.App.csproj", "{24942982-CA86-4D04-B8A7-8D3A27ABA95E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E2A817E4-9794-472D-8C45-39E659E50348}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2A817E4-9794-472D-8C45-39E659E50348}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2A817E4-9794-472D-8C45-39E659E50348}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2A817E4-9794-472D-8C45-39E659E50348}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4B964D6A-19F8-472D-A906-5C98A58E2533}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4B964D6A-19F8-472D-A906-5C98A58E2533}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B964D6A-19F8-472D-A906-5C98A58E2533}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -34,5 +27,11 @@ Global
 		{24942982-CA86-4D04-B8A7-8D3A27ABA95E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24942982-CA86-4D04-B8A7-8D3A27ABA95E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24942982-CA86-4D04-B8A7-8D3A27ABA95E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E0A080BD-379D-445A-A30C-9F44502D7D81}
 	EndGlobalSection
 EndGlobal

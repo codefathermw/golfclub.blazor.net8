@@ -35,6 +35,7 @@ namespace GolfClub.BLL.Services.Authentication
             catch (Exception ex)
             {
                 logger.LogError(ex, "Encountered an error");
+
                 return BaseResponseFactory.IsError<int>("An error occurred failed to get user id");
             }
         }
@@ -57,7 +58,8 @@ namespace GolfClub.BLL.Services.Authentication
                 {
                     UserName = signupDto.UserName,
                     PasswordHash = hashedPassword,
-                    UserRoles = [ new () { RoleId = 2}]
+                    UserRoles = [ new () { RoleId = 2}],
+                    DateCreated = DateTime.Now,
                 };
 
                 var newUser = await userRepository.AddAsync(user);
@@ -69,6 +71,7 @@ namespace GolfClub.BLL.Services.Authentication
                     Email = signupDto.Email,
                     FirstName = signupDto.FirstName,
                     LastName = signupDto.LastName,
+                    DateUpdated = DateTime.Now
                 };
 
                 await userProfileRepository.AddAsync(newProfile);
@@ -79,6 +82,7 @@ namespace GolfClub.BLL.Services.Authentication
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error creating account for username {username}", signupDto.UserName);
+
                 return BaseResponseFactory.IsError<string>("An error occurred while creating the account.");
             }
         }
@@ -88,11 +92,13 @@ namespace GolfClub.BLL.Services.Authentication
             try
             {
                 var user = await userRepository.TryGetAsync(u => u.UserName == userName);
+
                 return BaseResponseFactory.IsSuccess(user is not null);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error checking if username {username} exists", userName);
+
                 return BaseResponseFactory.IsError<bool>("An error occurred while checking the username.");
             }
         }
@@ -131,6 +137,7 @@ namespace GolfClub.BLL.Services.Authentication
             catch (Exception ex)
             {
                 logger.LogError(ex, "Exception occurred during login with username {Username}", loginDto.Username);
+
                 return BaseResponseFactory.IsError<ClaimsIdentity>("An error occurred, failed to login.");
             }
         }
@@ -140,11 +147,13 @@ namespace GolfClub.BLL.Services.Authentication
             try
             {
                 var user = await userProfileRepository.TryGetAsync(u => u.Email == email);
+
                 return BaseResponseFactory.IsSuccess(user is not null);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error checking if email {email} exists", email);
+
                 return BaseResponseFactory.IsError<bool>("An error occurred while checking the email.");
             }
         }

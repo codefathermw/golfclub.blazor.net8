@@ -1,0 +1,59 @@
+﻿@using GolfClub.BLL.Helpers
+@using GolfClub.BLL.Models.Domain
+@using GolfClub.BLL.Services.Users
+@using GolfClub.DAL.Models
+
+@inject IUserService userService;
+
+<p class="mb-4">Update your contact details here</p>
+
+<EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <InputText id="email" class="form-control" @bind-Value="model.Email" />
+            <ValidationMessage For="@(() => model.Email)" />
+        </div>
+        <div class="mb-3">
+            <label for="phone-number" class="form-label">Phone Number</label>
+            <InputText id="phone-number" class="form-control" @bind-Value="model.PhoneNumber" />
+            <ValidationMessage For="@(() => model.PhoneNumber)" />
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public UserProfile UserProfile { get; set; }
+    [SupplyParameterFromForm]
+    private UpdateContactModel model { get; set; } = new();
+    private EditContext editContext;
+
+    protected override void OnInitialized()
+    {
+        model = new()
+            {
+                Email = UserProfile.Email,
+                PhoneNumber = UserProfile.Phone!,
+            };
+        editContext = new EditContext(model);
+    }
+
+    public async Task<BaseResponse<string>?> HandleValidSubmit()
+    {
+        editContext?.Validate();
+
+        var validationMessages = editContext?.GetValidationMessages();
+
+        if (validationMessages is null || !validationMessages.Any())
+        {
+            UserProfile.Phone = model.PhoneNumber;
+            UserProfile.Email = model.Email;
+
+            return await userService.UpdateProfileAsync(UserProfile);
+        }
+
+        return null;
+    }
+}

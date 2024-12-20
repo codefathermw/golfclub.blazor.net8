@@ -1,6 +1,7 @@
 ﻿@page "/fitting-schedule"
 @using System.Globalization
 @using GolfClub.BLL.Services.Fittings
+@using GolfClub.Blazor.App.Components.Modals
 @using GolfClub.DAL.Models
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Admin")]
@@ -12,6 +13,8 @@
 
 <PageTitle>Fitting Schedule</PageTitle>
 
+<CalendarEventModal IsVisible="@showModal" SelectedFitting="@selectedFitting" />
+
 <div class="p-3">
     <h2 class="text-success mb-3">Fitting Schedule</h2>
     <p class="mb-4">Check out the monthly fitting Schedule</p>
@@ -20,9 +23,9 @@
         <div class="container calendar">
             <div class="calendar-header">
                 <div class="d-flex align-items-center">
-                    <button class="btn btn-outline-success" @onclick="GoToPreviousMonth">Back</button>
+                    <button class="btn btn-outline-success" @onclick="GoToPreviousMonth"><i class="bi bi-caret-left-fill"></i></button>
                     <h4 class="mx-3">@currentMonthName @currentYear</h4>
-                    <button class="btn btn-outline-success ms-2" @onclick="GoToNextMonth">Next</button>
+                    <button class="btn btn-outline-success ms-2" @onclick="GoToNextMonth"><i class="bi bi-caret-right-fill"></i></button>
                 </div>
                 <button class="btn btn-primary" @onclick="GoToToday">Today</button>
             </div>
@@ -54,7 +57,9 @@
                                                 <div>
                                                     @foreach (var label in day.Labels)
                                                     {
-                                                        <span class="badge rounded-pill bg-secondary me-1">View</span> 
+                                                        <button class="btn badge btn-primary me-1 px-1" @onclick="() => ViewCalendarEvent(label.Id)">
+                                                            ..@label.Text
+                                                        </button>
                                                     }     
                                             </div>
                                         </div>
@@ -71,16 +76,31 @@
     </div>    
 </div>
 
-
 @code {
     private DateTime currentMonth;
     private string currentMonthName;
     private int currentYear;
+    private bool showModal = false;
+    private Fitting selectedFitting = null!;
 
     protected override async Task OnInitializedAsync()
     {
         currentMonth = DateTime.Now;
         await UpdateCalendar();
+    }
+
+    private async Task ViewCalendarEvent(string referenceNumber)
+    {
+        showModal = true;
+        var response = await fittingService.GetFittingByReferenceNumberAsync(referenceNumber);
+
+        if (response.IsErrorOccurred)
+        {
+            navigationManager.NavigateTo("/Error");
+            return;
+        }
+
+        selectedFitting = response.Result;
     }
 
     private async Task UpdateCalendar()
@@ -146,14 +166,19 @@
         }
     }
 
-    private List<Label> GenerateLabelsForDay(DateTime date, List<Fitting> fittings)
+    private List<CalendarLabel> GenerateLabelsForDay(DateTime date, List<Fitting> fittings)
     {
-        var labels = new List<Label>();
-        
+        var labels = new List<CalendarLabel>();
+
         foreach(var item in fittings) {
-            if (date.Date == item.ScheduledDate.Date) {
-                labels.Add(new Label { Text = "", CssClass = "" });
-            }
+            if (date.Date == item.ScheduledDate.Date)
+                labels.Add(new () 
+                { 
+                    Id = item.ReferenceNumber!,
+                    Text = (item.ReferenceNumber is not null && item.ReferenceNumber.Length > 3) 
+                        ? item.ReferenceNumber[^3..] 
+                        : "N/A"
+                });
         }
 
         return labels;
@@ -163,13 +188,14 @@
     {
         public DateTime Date { get; set; }
         public bool IsToday { get; set; }
-        public List<Label> Labels { get; set; } = new();
+        public List<CalendarLabel> Labels { get; set; } = new();
     }
 
-    public class Label
+    public class CalendarLabel
     {
-        public string Text { get; set; }
-        public string CssClass { get; set; }
+        public required string Text { get; set; }
+        public string? CssClass { get; set; }
+        public required string Id { get; set; }
     }
 }
 
@@ -200,12 +226,12 @@
     .calendar-body .table td{
         padding: 0!important;
         height: 100px;
-        max-width: 100px!important;
+        width: 14.28%;
     }
 
     .calendar-body .table th {
-        text-align: center;
-        max-width: 100px!important;
+            text-align: center;
+            width: 14.28%;
     }
 
     .day {

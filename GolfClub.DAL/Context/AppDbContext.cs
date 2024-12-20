@@ -1,18 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using GolfClub.DAL.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GolfClub.DAL.Context
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
-            public AppDbContext(DbContextOptions<AppDbContext> options)
-        : base(options)
-    {
-    }
         public DbSet<UserAccount> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }

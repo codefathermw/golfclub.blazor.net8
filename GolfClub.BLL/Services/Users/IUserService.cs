@@ -6,9 +6,9 @@ namespace GolfClub.BLL.Services.Users
 {
     public interface IUserService
     {
-        Task<BaseResponse<UserProfile>> GetUserProfile(int userId);
-        Task<BaseResponse<string>> UpdateProfile(UserProfile profile);
-        Task<BaseResponse<string>> ChangePassword(ChangePasswordDto changePasswordDto);
-        Task<BaseResponse<List<UserAccount>>> GetUserProfiles();
+        Task<BaseResponse<UserProfile>> GetUserProfileAsync(int userId);
+        Task<BaseResponse<string>> UpdateProfileAsync(UserProfile profile);
+        Task<BaseResponse<string>> UpdatePasswordAsync(UpdatePasswordDto updatePasswordDto);
+        Task<BaseResponse<List<UserAccount>>> GetUserProfilesAsync();
     }
 }

@@ -1,40 +1,72 @@
+@using GolfClub.BLL.Enums
 @using GolfClub.BLL.Helpers
 @using GolfClub.BLL.Services.Users
-@using GolfClub.Blazor.App.Components.Pages.Account.UpdateForms
+@using GolfClub.Blazor.App.Components.Modals
+@using GolfClub.Blazor.App.Components.Pages.UpdateForms
 @using GolfClub.DAL.Models
 @rendermode InteractiveServer
 
 @inject NavigationManager NavigationManager;
 @inject IUserService userService;
 
-@if (editAction == 1)
-{
-    <UpdateProfile />
-}
-else if (editAction == 2)
-{
-    <UpdateContacts />
-}
-else if (editAction == 3)
-{
-    <UpdatePassword />
-}
-else if (User is null)
+@if (User is null)
 {
     <p>Please wait...</p>
 }
 else
 {
+    <ModalComponent IsVisible="@isVisible" Title="@editFormTitle" @ref="modal">
+        <BodyContent>
+            <div class="@(!showErrorAlert ? "d-none" : null)">
+                <div class="alert alert-danger alert-dismissible fade @(showErrorAlert ? "show" : "")" role="alert">
+                    <span>@message</span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+            @if (editActionEnum == ProfileEditActionEnum.Personal)
+            {
+                <UpdateProfileForm UserProfile="@User" @ref="profileForm"/>
+            }
+            else if (editActionEnum == ProfileEditActionEnum.Contacts)
+            {
+                <UpdateContactsForm UserProfile="@User" @ref="contactsForm"/>
+            }
+            else if (editActionEnum == ProfileEditActionEnum.Password)
+            {
+                <UpdatePasswordForm UserProfile="@User" @ref="passwordForm"/>
+            }
+        </BodyContent>
+        <FooterContent>
+            <button class="btn btn-primary" @onclick="Submit">Save Changes</button>
+        </FooterContent>
+    </ModalComponent>
+
     <div class="p-3">
-        <h3 class="text-success">My Profile</h3>
+        <h3 class="text-success">
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+                    Customer
+                </Authorized>
+                <NotAuthorized>
+                    My
+                </NotAuthorized>
+            </AuthorizeView>
+            Profile
+        </h3>
 
         <div class="justify-content-between d-flex mb-4">
             <div class="my-3">
-                <h5>@StringHelper.NotAvail(User.FirstName) @StringHelper.NotAvail(User.LastName)</h5>
-                <p>@StringHelper.NotAvail(User.Address)</p>
+                <h5>@UiHelper.NotAvail(User.FirstName!) @UiHelper.NotAvail(User.LastName!)</h5>
+                <h6>Member</h6>
             </div>
             <div>
-                <button class="btn btn-sm btn-success" @onclick="ChangePasswordStep"><i class="bi bi-pencil"></i> Change Password</button>
+                <AuthorizeView Roles="Admin">
+                    <NotAuthorized>
+                        <button class="btn btn-sm btn-success" @onclick="() => EditAction(ProfileEditActionEnum.Password)">
+                            <i class="bi bi-pencil"></i> Change Password
+                        </button>
+                    </NotAuthorized>
+                </AuthorizeView>
             </div>
         </div>
 
@@ -42,34 +74,36 @@ else
 
         <div class="justify-content-between d-flex mb-4">
             <h5 class="text-success">Personal Information</h5>
-            <button class="btn btn-sm btn-success" @onclick="EditPersonalStep"><i class="bi bi-pencil"></i> Edit</button>
+            <button class="btn btn-sm btn-success" @onclick="() => EditAction(ProfileEditActionEnum.Personal)">
+                <i class="bi bi-pencil"></i> Edit
+            </button>
         </div>
 
         <div class="row">
             <div class="col-5">
                 <label class="text-black-50 mb-1">First Name</label>
-                <p>@StringHelper.NotAvail(User.FirstName)</p>
+                <p>@UiHelper.NotAvail(User.FirstName)</p>
             </div>
             <div class="col-5">
                 <label class="text-black-50 mb-1">Last Name</label>
-                <p>@StringHelper.NotAvail(User.LastName)</p>
+                <p>@UiHelper.NotAvail(User.LastName)</p>
             </div>
         </div>
         <div class="row">
             <div class="col-5">
                 <label class="text-black-50 mb-1">Date of Birth</label>
-                <p>@StringHelper.NotAvail(User.DateOfBirth).ToString()</p>
+                <p>@(User.DateOfBirth is not null ? User.DateOfBirth.Value.ToString("dd-MM-yyyy") : "N/A")</p>
             </div>
             <div class="col-5">
                 <label class="text-black-50 mb-1">Physical Address</label>
-                <p>@StringHelper.NotAvail(User.Address)</p>
+                <p>@UiHelper.NotAvail(User.Address!)</p>
             </div>
         </div>
 
         <div class="row mb-3">
             <div class="col-5">
                 <label class="text-black-50 mb-1">Golf Club Size</label>
-                <p>@StringHelper.NotAvail(User.GolfClubSize)</p>
+                <p>@UiHelper.NotAvail(User.GolfClubSize)</p>
             </div>
         </div>
 
@@ -77,18 +111,20 @@ else
 
         <div class="justify-content-between d-flex mb-4">
             <h5 class="text-success">Contact Information</h5>
-            <button class="btn btn-sm btn-success" @onclick="EditContactStep"><i class="bi bi-pencil"></i> Edit</button>
+            <button class="btn btn-sm btn-success" @onclick="() => EditAction(ProfileEditActionEnum.Contacts)">
+                <i class="bi bi-pencil"></i> Edit
+            </button>
         </div>
 
         <div class="row mb-3">
             <div class="row mb-3">
                 <div class="col-5">
                     <label class="text-black-50 mb-1">Email Address</label>
-                    <p>@StringHelper.NotAvail(User.Email)</p>
+                    <p>@UiHelper.NotAvail(User.Email)</p>
                 </div>
                 <div class="col-5">
                     <label class="text-black-50 mb-1">Phone Number</label>
-                    <p>@StringHelper.NotAvail(User.Phone)</p>
+                    <p>@UiHelper.NotAvail(User.Phone)</p>
                 </div>
             </div>
         </div>
@@ -98,30 +134,73 @@ else
 @code {
     [Parameter]
     public int userId { get; set; }
-    private UserProfile User { get; set; }
-    private int editAction = 0;
-    private string errorMessage = string.Empty;
+    private UserProfile? User { get; set; }
+    private bool isVisible = false;
+    public ProfileEditActionEnum editActionEnum = ProfileEditActionEnum.None;
+    private string editFormTitle = string.Empty;
+    private UpdateProfileForm profileForm;
+    private UpdateContactsForm contactsForm;
+    private UpdatePasswordForm passwordForm;
+    private ModalComponent modal;
+    private bool showErrorAlert = false;
+    private bool isError = false;
+    private string message = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
-        var response = await userService.GetUserProfile(userId);
+        var response = await userService.GetUserProfileAsync(userId);
 
         if (response.IsErrorOccurred)
         {
             NavigationManager.NavigateTo("/error");
+            return;
         }
 
         User = response.Result;
     }
-    private void ChangePasswordStep() {
-        editAction = 3;
+
+    private async Task Submit()
+    {
+        BaseResponse<string>? response = null;
+
+        @if (editActionEnum == ProfileEditActionEnum.Personal)
+        {
+            response = await profileForm.HandleValidSubmit();
+        }
+        else if (editActionEnum == ProfileEditActionEnum.Contacts)
+        {
+            response = await contactsForm.HandleValidSubmit();
+        }
+        else if (editActionEnum == ProfileEditActionEnum.Password)
+        {
+            response = await passwordForm.HandleValidSubmit();
+        }
+
+        if (response is not null)
+        {
+            showErrorAlert = response.IsErrorOccurred;
+            message = response.Message;
+
+            if (!showErrorAlert)
+            {
+                modal.Hide();
+            }
+        }
+
+        showErrorAlert = false;
     }
-    private void EditContactStep() {
-        editAction = 2;
-    }
-    private void EditPersonalStep() {
-        editAction = 1;
-    }
-    private void Reset() {
-        editAction = 3;
+
+    private void EditAction(ProfileEditActionEnum action)
+    {
+        editActionEnum = action;
+        editFormTitle = action switch
+        {
+            ProfileEditActionEnum.Password => "Change Password",
+            ProfileEditActionEnum.Personal => "Edit Personal Information",
+            ProfileEditActionEnum.Contacts => "Edit Contact Information",
+            _ => "Edit Profile"
+        };
+        isVisible = true;
     }
 }
+

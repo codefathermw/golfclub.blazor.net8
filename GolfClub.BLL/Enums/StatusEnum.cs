@@ -6,6 +6,9 @@
         Acknowledged,
         Approved,
         Cancelled,
-        Completed
+        Completed,
+        Suspended,
+        Scheduled,
+        Prepped
     }
 }

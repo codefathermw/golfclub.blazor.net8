@@ -19,7 +19,7 @@ namespace GolfClub.BLL.Services.Fittings
             return times.Where(t => !timeSpans.Contains(t));
         }
 
-        public async Task<BaseResponse<IEnumerable<TimeSpan>>> GetAvailableTimeSlot(DateTime date)
+        public async Task<BaseResponse<IEnumerable<TimeSpan>>> GetAvailableTimeSlotAsync(DateTime date)
         {
             try
             {
@@ -52,7 +52,31 @@ namespace GolfClub.BLL.Services.Fittings
             }
         }
 
-        public async Task<BaseResponse<IEnumerable<Fitting>>> GetFittingInProgress(int userId)
+        public async Task<BaseResponse<Fitting>> GetFittingByReferenceNumberAsync(string referenceNumber)
+        {
+            try
+            {
+                var db = fittingRepository.GetContext<AppDbContext>();
+                var result = await db!.FittingRequests
+                    .Where(u => u.ReferenceNumber == referenceNumber)
+                    .Include(u => u.User)
+                    .ThenInclude(ur => ur.UserProfile)
+                    .FirstOrDefaultAsync();
+
+                if (result is null)
+                    return BaseResponseFactory.IsError<Fitting>("Not found");
+
+                return BaseResponseFactory.IsSuccess(result);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Encountered an error");
+
+                return BaseResponseFactory.IsError<Fitting>();
+            }
+        }
+
+        public async Task<BaseResponse<IEnumerable<Fitting>>> GetFittingInProgressAsync(int userId)
         {
             try
             {
@@ -68,12 +92,15 @@ namespace GolfClub.BLL.Services.Fittings
             }
         }
 
-        public async Task<BaseResponse<IEnumerable<Fitting>>> GetFittingRequest()
+        public async Task<BaseResponse<IEnumerable<Fitting>>> GetFittingRequestAsync()
         {
             try
             {
                 var db = fittingRepository.GetContext<AppDbContext>();
-                var result = await db!.FittingRequests.Include(u => u.User).ThenInclude(ur => ur.UserProfile).ToListAsync();
+                var result = await db!.FittingRequests
+                    .Include(u => u.User)
+                    .ThenInclude(ur => ur.UserProfile)
+                    .ToListAsync();
                 
                 return BaseResponseFactory.IsSuccess<IEnumerable<Fitting>>(result);
             }
@@ -101,10 +128,13 @@ namespace GolfClub.BLL.Services.Fittings
             }
         }
 
-        public async Task<BaseResponse<bool>> SaveFittingRequest(SaveFittingRequestDto saveFittingRequestDto)
+        public async Task<BaseResponse<bool>> SaveFittingRequestAsync(SaveFittingRequestDto saveFittingRequestDto)
         {
             try
             {
+                var response = await GetMonthlyFittingsAsync(DateTime.Now);
+                var refNum = $"F{DateTime.Now:yyMMdd}-{response.Result.Count()}" ;
+
                 var entity = new Fitting()
                 {
                     Comments = saveFittingRequestDto.Comments,
@@ -112,7 +142,8 @@ namespace GolfClub.BLL.Services.Fittings
                     RequestDate = DateTime.Now,
                     ScheduledDate = saveFittingRequestDto.ScheduledDate,
                     Status = StatusEnum.Pending.ToString(),
-                    UserId = saveFittingRequestDto.UserId
+                    UserId = saveFittingRequestDto.UserId,
+                    ReferenceNumber = refNum
                 };
 
                 await fittingRepository.AddAsync(entity);
@@ -128,12 +159,12 @@ namespace GolfClub.BLL.Services.Fittings
             }
         }
 
-        public async Task<BaseResponse<bool>> UpdateFittingStatus(int fittingId, string fittingStatus)
+        public async Task<BaseResponse<bool>> UpdateFittingStatusAsync(int fittingId, StatusEnum status)
         {
             try
             {
                 var result = await fittingRepository.TryGetByIdAsync(fittingId);
-                result!.Status = fittingStatus;
+                result!.Status = status.ToString();
                 fittingRepository.Update(result);
                 await fittingRepository.SaveChangesAsync();
 

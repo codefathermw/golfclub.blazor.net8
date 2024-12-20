@@ -1,4 +1,5 @@
 @page "/customer-profiles"
+
 @using GolfClub.BLL.Helpers
 @using GolfClub.BLL.Services.Users
 @using GolfClub.DAL.Models
@@ -13,7 +14,7 @@
     <h2 class="text-success mb-3">Customer Profiles</h2>
     <p class="mb-4">Below is a list of all customers that are registered. Click view more option to view details.</p>
 
-    <div class="">
+    <div>
         @if (!string.IsNullOrEmpty(errorMessage))
         {
             <div class="alert alert-danger" role="alert">
@@ -31,10 +32,11 @@
                     @foreach (var item in users)
                     {
                         <div class="col-md-3">
-                            <div class="Card text-center border rounded px-3 py-4">
+                            <div class="Card text-center px-3 py-4 mb-3">
                                 <h1><i class="bi bi-person"></i></h1>
-                                <p>@StringHelper.NotAvail(@item.UserProfile.FirstName) @StringHelper.NotAvail(@item.UserProfile.LastName)</p>
-                                <a href="@($"/view-profile/{item.UserId}")" class="btn btn-outline-success btn-sm">Edit</a>                                
+                                <h6>@UiHelper.NotAvail(@item.UserProfile.FirstName!) @UiHelper.NotAvail(@item.UserProfile.LastName!)</h6>
+                                <p style="font-size: 12px;">Created on: @item.DateCreated.ToString("dd-MM-yyyy")</p>
+                                <a href="@($"/view-profile/{item.UserId}")" class="btn btn-outline-success btn-sm"><i class="bi bi-eye"></i> View</a>
                             </div>
                         </div>
                     }
@@ -45,13 +47,13 @@
 </div>
 
 @code {
-
     private List<UserAccount> users = null!;
     private string errorMessage = string.Empty;
     private int rowNum = 1;
+
     protected override async Task OnInitializedAsync()
     {
-        var response = await userService.GetUserProfiles();
+        var response = await userService.GetUserProfilesAsync();
 
         if (response.IsErrorOccurred)
         {
@@ -60,18 +62,5 @@
         }
 
         users = response.Result.ToList();
-    }
-
-    private string GetStatusBadgeClass(string status)
-    {
-        return status switch
-        {
-            "pending" => "warning",
-            "confirmed" => "success",
-            "cancelled" => "danger",
-            "completed" => "success",
-            "scheduled" => "info",
-            _ => "success",
-        };
     }
 }
