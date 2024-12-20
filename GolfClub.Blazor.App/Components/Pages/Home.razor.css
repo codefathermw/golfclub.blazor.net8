@@ -1,0 +1,14 @@
+﻿body {
+    .jumbotron
+
+{
+    background-size: cover;
+    background-position: center;
+    height: 550px;
+    border-radius: 12px;
+}
+
+.bg-cover {
+    background-image: url('images/golf-lessons2.jpg');
+}
+}

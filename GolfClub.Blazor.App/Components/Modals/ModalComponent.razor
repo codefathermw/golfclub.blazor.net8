@@ -39,7 +39,7 @@
         StateHasChanged();
     }
 
-    private async Task CloseModal()
+    public async Task CloseModal()
     {
         IsVisible = false;
         await OnClose.InvokeAsync();

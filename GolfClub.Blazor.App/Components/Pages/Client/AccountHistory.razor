@@ -53,7 +53,7 @@
                         <td class="text-center">@item.ScheduledDate.ToString("dd-MM-yyyy")</td>
                         <td class="text-center">@item.ScheduledDate.ToString("hh:mm tt")</td>
                         <td class="text-center">
-                            <span class="badge badge-@UIHelper.GetStatusBadgeClass(item.Status.ToLower())">
+                            <span class="badge badge-@UIHelper.GetTaskStatusClass(item.Status.ToLower())">
                                 @item.Status
                             </span>
                         </td>

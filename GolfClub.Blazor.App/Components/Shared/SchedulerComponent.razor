@@ -108,7 +108,7 @@
 
         try
         {
-            if (user.Identity.IsAuthenticated)
+            if (user.Identity!.IsAuthenticated)
             {
                 userId = user.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
             }
@@ -188,19 +188,21 @@
         if (step > 1)
         {
             step--;
-            validationError = null;
+            validationError = null!;
         }
     }
 
     private async Task SaveAsync()
     {
-        validationError = null;
+        validationError = null!;
+
+        TimeSpan timeSpan = DateTime.Parse(selectedTime).TimeOfDay;
 
         var saveFittingRequestDto = new SaveFittingRequestDto()
         {
             Comments = comments,
             FittingType = FittingType,
-            ScheduledDate = selectedDate.Value,
+            ScheduledDate = selectedDate!.Value.Add(timeSpan),
             UserId = Convert.ToInt32(userId)
         };
 
