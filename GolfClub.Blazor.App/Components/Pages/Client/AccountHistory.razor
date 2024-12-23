@@ -38,7 +38,7 @@
                     <th class="text-center">Scheduled Date</th>
                     <th class="text-center">Scheduled Time</th>
                     <th class="text-center">Status</th>
-                    <th>Received Date</th>
+                    <th class="text-center">Received Date</th>
                 </tr>
             </thead>
             <tbody>
@@ -46,15 +46,15 @@
                 {
                     <tr>
                         <td>@rowNum</td>
-                        <td>@item.FittingType</td>
+                        <td>@UIHelper.Normalize(item.FittingType)</td>
                         <td class="text-center">@item.ScheduledDate.ToString("dd-MM-yyyy")</td>
                         <td class="text-center">@item.ScheduledDate.ToString("hh:mm tt")</td>
                         <td class="text-center">
-                            <span class="badge badge-@UIHelper.GetTaskStatusClass(item.Status.ToLower())">
+                            <span class="badge rounded-pill bg-@UIHelper.GetTaskStatusClass(item.Status)">
                                 @item.Status
                             </span>
                         </td>
-                        <td>@item.RequestDate.ToString("dd-MM-yyy HH:mm")</td>
+                        <td class="text-center">@item.RequestDate.ToString("dd-MM-yyyy HH:mm")</td>
                     </tr>
                     rowNum++;
                 }
