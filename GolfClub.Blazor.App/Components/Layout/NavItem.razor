@@ -1,12 +1,14 @@
 ﻿@code {
-    [Parameter] public string Icon { get; set; }
-    [Parameter] public string Label { get; set; }
-    [Parameter] public string Link { get; set; }
-    [Parameter] public NavLinkMatch Match { get; set; } = NavLinkMatch.Prefix;
+    [Parameter]
+    public string? Icon { get; set; }
+    [Parameter]
+    public string? Label { get; set; }
+    [Parameter]
+    public string? Link { get; set; }
+    [Parameter]
+    public NavLinkMatch Match { get; set; } = NavLinkMatch.Prefix;
 }
 
-<div class="nav-item px-3">
-    <NavLink class="nav-link" href="@Link" Match="@Match">
-        <i class="bi @Icon" aria-hidden="true"></i> @Label
-    </NavLink>
-</div>
+<NavLink class="nav-link" href="@Link" Match="@Match">
+    <i class="bi @Icon" aria-hidden="true"></i> @Label
+</NavLink>

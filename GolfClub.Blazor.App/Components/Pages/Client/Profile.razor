@@ -1,10 +1,8 @@
 ﻿@page "/profile"
-
 @using GolfClub.BLL.Services.Authentication
 @using Microsoft.AspNetCore.Authorization
 @attribute [StreamRendering]
 @attribute [Authorize(Roles = "User")]
-
 @inject NavigationManager NavigationManager;
 @inject IUserAuthenticationService userAuthenticationService;
 
@@ -14,6 +12,7 @@
 
 @code {
     private int userId { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         var response = await userAuthenticationService.GetUserId();

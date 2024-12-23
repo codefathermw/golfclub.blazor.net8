@@ -4,10 +4,8 @@
 @using GolfClub.BLL.Services.Fittings
 @using GolfClub.DAL.Models
 @using Microsoft.AspNetCore.Authorization
-
 @attribute [Authorize(Roles = "User")]
 @attribute [StreamRendering]
-
 @inject IFittingService fittingService;
 @inject IUserAuthenticationService userAuthenticationService;
 @inject NavigationManager NavigationManager;
@@ -64,7 +62,6 @@
 </div>
 
 @code {
-
     private List<Fitting> fittings = null!;
     private string errorMessage = string.Empty;
     private int rowNum = 1;

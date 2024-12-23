@@ -1,15 +1,13 @@
 ﻿@page "/fitting-requests"
-@attribute [StreamRendering]
-
 @using GolfClub.BLL.Helpers
 @using GolfClub.BLL.Services.Files
 @using GolfClub.BLL.Services.Fittings
 @using GolfClub.DAL.Models
 @using Microsoft.AspNetCore.Authorization
-
+@attribute [StreamRendering]
+@attribute [Authorize(Roles = "Admin")]
 @inject IFittingService fittingService
 @inject NavigationManager navigationManager
-@attribute [Authorize(Roles = "Admin")]
 
 <PageTitle>Fitting Requests</PageTitle>
 
@@ -17,7 +15,7 @@
     <h2 class="text-success mb-3">Fitting Requests</h2>
     <p class="mb-4">Below is a list of all fitting requests. You can click on any request to view and manage tasks associated with it.</p>
 
-    <div class="">
+    <div>
         @if (!string.IsNullOrEmpty(errorMessage))
         {
             <div class="alert alert-danger" role="alert">
@@ -31,7 +29,7 @@
         else
         {
             <table class="table table-hover fitting-table">
-                <thead class="">
+                <thead>
                     <tr>
                         <th>#</th>
                         <th class="text-center">Scheduled Date</th>

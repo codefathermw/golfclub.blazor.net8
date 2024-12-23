@@ -8,7 +8,8 @@
     {
         await base.OnInitializedAsync();
         var httpContext = httpContextAccessor.HttpContext;
-        if (httpContext.User.Identity.IsAuthenticated)
+
+        if (httpContext!.User.Identity!.IsAuthenticated)
         {
             await httpContext.SignOutAsync();
             navigationManager.NavigateTo("/login", true);

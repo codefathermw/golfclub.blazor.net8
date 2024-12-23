@@ -4,12 +4,10 @@
 @using GolfClub.BLL.Services.Files
 @using GolfClub.BLL.Services.Fittings
 @using Microsoft.AspNetCore.Components.Authorization
-
+@rendermode InteractiveServer
 @inject IFittingService FittingService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
-
-@rendermode InteractiveServer
 
 <div class="p-3">
 
@@ -21,6 +19,7 @@
 
     <div class="row mt-4">
         <div class="wizard col-md-8">
+
             @if (!string.IsNullOrEmpty(validationError))
             {
                 <div class="alert alert-warning" role="alert">
@@ -88,18 +87,20 @@
 </div>
 
 @code {
-    [Parameter] public string Title { get; set; } = "Schedule a Task";
-    [Parameter] public string TaskName { get; set; } = "task";
-    [Parameter] public string FittingType { get; set; } = "default-task";
-
+    [Parameter]
+    public string Title { get; set; } = "Schedule a Task";
+    [Parameter]
+    public string TaskName { get; set; } = "task";
+    [Parameter]
+    public string FittingType { get; set; } = "default-task";
     private int step = 1;
     private DateTime? selectedDate = DateTime.Today;
-    private string selectedTime { get; set; }
+    private string? selectedTime { get; set; }
     private string comments = string.Empty;
     private bool slotsAvailable = false;
     private string validationError = string.Empty;
     private List<string> availableTimeSlots = new();
-    private string userId { get; set; }
+    private string? userId { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -170,7 +171,7 @@
 
         availableTimeSlots = timeSlots.Select(t => DateTime.Today.Add(t).ToString("h:mm tt")).ToList();
         slotsAvailable = true;
-        validationError = null;
+        validationError = null!;
     }
 
     private void NextStep()
@@ -196,7 +197,7 @@
     {
         validationError = null!;
 
-        TimeSpan timeSpan = DateTime.Parse(selectedTime).TimeOfDay;
+        TimeSpan timeSpan = DateTime.Parse(selectedTime!).TimeOfDay;
 
         var saveFittingRequestDto = new SaveFittingRequestDto()
         {

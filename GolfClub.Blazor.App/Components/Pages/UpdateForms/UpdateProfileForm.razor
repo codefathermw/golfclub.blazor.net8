@@ -3,7 +3,6 @@
 @using GolfClub.BLL.Services.Users
 @using GolfClub.Blazor.App.Domain.Models
 @using GolfClub.DAL.Models
-
 @inject IUserService userService;
 
 <p class="mb-4">Update personal details here</p>
@@ -41,10 +40,10 @@
 
 @code {
     [Parameter]
-    public UserProfile UserProfile { get; set; }
+    public UserProfile? UserProfile { get; set; }
     [SupplyParameterFromForm]
     private UpdateProfileModel model { get; set; } = new();
-    private EditContext editContext;
+    private EditContext? editContext;
 
     protected override void OnInitialized()
     {

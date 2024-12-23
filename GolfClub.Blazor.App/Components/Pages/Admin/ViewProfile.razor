@@ -1,11 +1,9 @@
 @page "/view-profile/{userId:int}"
-
 @using GolfClub.BLL.Services.Authentication
 @using GolfClub.Blazor.App.Components.Shared
 @using Microsoft.AspNetCore.Authorization
 @attribute [StreamRendering]
 @attribute [Authorize(Roles = "Admin")]
-
 @inject NavigationManager NavigationManager;
 @inject IUserAuthenticationService userAuthenticationService;
 

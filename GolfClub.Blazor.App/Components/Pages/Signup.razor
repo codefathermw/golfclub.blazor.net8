@@ -1,7 +1,6 @@
 ﻿@page "/signup"
 @using GolfClub.BLL.Models.Domain
 @using GolfClub.BLL.Services.Authentication
-
 @inject IUserAuthenticationService userAuthenticationService
 @inject NavigationManager navigationManager
 
@@ -78,11 +77,9 @@
 
 @code {
     [CascadingParameter]
-    public HttpContext HttpContext { get; set; }
-
+    public HttpContext? HttpContext { get; set; }
     [SupplyParameterFromForm]
     public SignupFormModel model { get; set; } = new();
-
     private string? errorMessage;
     private bool isSuccess = false;
     private bool showPassword = false;

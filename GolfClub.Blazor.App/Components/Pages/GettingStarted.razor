@@ -1,11 +1,8 @@
 ﻿@page "/getting-started"
-
 @using GolfClub.BLL.Services.Files
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
-
 @rendermode InteractiveServer
-
 @inject IFileService fileService;
 @inject NavigationManager NavigationManager;
 
@@ -37,11 +34,6 @@
     private bool isEditing = false;
     private string errorMessage = string.Empty;
 
-    private void EnableEditing()
-    {
-        tempText = paragraphText;
-        isEditing = true;
-    }
     protected override async Task OnInitializedAsync()
     {
         var response = await fileService.LoadContentFromFileAsync();
@@ -52,6 +44,12 @@
         }
 
         paragraphText = response.Result;
+    }
+
+    private void EnableEditing()
+    {
+        tempText = paragraphText;
+        isEditing = true;
     }
 
     private async void SaveChanges()

@@ -1,0 +1,101 @@
+﻿html, body {
+    font-family: "Poppins", sans-serif !important;
+    font-size: 14px;
+}
+
+body {
+    background: #dbe5dd;
+}
+
+.sidebar {
+    height: 100vh;
+    padding-top: 15px;
+    display: flex;
+    flex-direction: column;
+    /*border-right: 1px solid #dee2e6;*/
+}
+
+    .sidebar .nav-link {
+        padding: 12px 15px;
+        color: #3B4045 !important;
+        font-size: 14px;
+        background-color: #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 5px;
+    }
+
+        .sidebar .nav-link:hover {
+            color: #007bff !important;
+        }
+
+        .sidebar .nav-link.active {
+            background-color: #e9ecef;
+            color: #007bff !important;
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 12px;
+            font-size: 18px;
+            margin-top: 16px;
+            color: #999;
+        }
+
+        .sidebar .nav-link.active i {
+            color: #007bff !important;
+        }
+
+.fitting-table {
+    border: 1px solid #E3EBF3;
+}
+
+    .fitting-table th, .fitting-table td {
+        color: #55595C;
+        font-size: 14px;
+        padding: 10px 10px;
+        vertical-align: middle;
+    }
+
+    .fitting-table th {
+        font-weight: 500;
+        border-top: 1px solid #E3EBF3 !important;
+    }
+
+    .fitting-table .btn-sm {
+        font-size: 12px;
+    }
+
+.badge {
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    text-transform: capitalize !important;
+}
+
+.fitting-table {
+    border: 1px solid #E3EBF3;
+}
+
+    .fitting-table th, .fitting-table td {
+        color: #55595C;
+        font-size: 14px;
+        padding: 10px 10px;
+        vertical-align: middle;
+    }
+
+    .fitting-table th {
+        font-weight: 500;
+        border-top: 1px solid #E3EBF3 !important;
+    }
+
+    .fitting-table .btn-sm {
+        font-size: 12px;
+    }
+
+.badge {
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    text-transform: capitalize !important;
+}
+
+.modal-bg {
+    background: rgba(0, 0, 0, 0.5);
+}

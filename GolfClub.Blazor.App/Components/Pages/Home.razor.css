@@ -1,7 +1,4 @@
-﻿body {
-    .jumbotron
-
-{
+﻿.jumbotron {
     background-size: cover;
     background-position: center;
     height: 550px;
@@ -10,5 +7,4 @@
 
 .bg-cover {
     background-image: url('images/golf-lessons2.jpg');
-}
 }

@@ -1,5 +1,4 @@
 ﻿@page "/account-history"
-
 @using GolfClub.BLL.Helpers
 @using GolfClub.BLL.Services.Files
 @using GolfClub.BLL.Services.Fittings
@@ -7,10 +6,8 @@
 @using GolfClub.BLL.Services.Authentication
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authorization
-
 @attribute [Authorize(Roles = "User")]
 @attribute [StreamRendering]
-
 @inject IFittingService fittingService;
 @inject IUserAuthenticationService userAuthenticationService;
 @inject NavigationManager NavigationManager;
@@ -70,6 +67,7 @@
     private List<Fitting> fittings = null!;
     private string errorMessage = string.Empty;
     private int rowNum = 1;
+
     protected override async Task OnInitializedAsync()
     {
         var response = await userAuthenticationService.GetUserId();

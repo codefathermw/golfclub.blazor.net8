@@ -1,18 +1,16 @@
 @page "/customer-profiles"
-
 @using GolfClub.BLL.Helpers
 @using GolfClub.BLL.Services.Users
 @using GolfClub.DAL.Models
 @attribute [StreamRendering]
-
 @inject IUserService userService
 @inject NavigationManager navigationManager
 
 <PageTitle>Customer Profiles</PageTitle>
 
-<div class="p-3">
-    <h2 class="text-success mb-3">Customer Profiles</h2>
-    <p class="mb-4">Below is a list of all customers that are registered. Click view more option to view details.</p>
+<div class="customer-profiles">
+    <h2 class="header">Customer Profiles</h2>
+    <p class="description">Below is a list of all customers that are registered. Click view more option to view details.</p>
 
     <div>
         @if (!string.IsNullOrEmpty(errorMessage))
@@ -23,27 +21,28 @@
         }
         else if (users == null)
         {
-            <p><em>Loading...</em></p>
+            <p class="loading-text"><em>Loading...</em></p>
         }
         else
         {
             <div class="row">
-                @if (users.Count > 0) {
+                @if (users.Count > 0)
+                {
                     @foreach (var item in users)
                     {
                         <div class="col-md-3">
-                            <div class="Card text-center px-3 py-4 mb-3">
-                                <h1><i class="bi bi-person"></i></h1>
-                                <h6>@UIHelper.NotAvail(@item.UserProfile.FirstName!) @UIHelper.NotAvail(@item.UserProfile.LastName!)</h6>
-                                <p style="font-size: 12px;">Created on: @item.DateCreated.ToString("dd-MM-yyyy")</p>
-                                <a href="@($"/view-profile/{item.UserId}")" class="btn btn-outline-success btn-sm"><i class="bi bi-eye"></i> View</a>
+                            <div class="card-container">
+                                <h1 class="icon"><i class="bi bi-person"></i></h1>
+                                <h6 class="name">@UIHelper.NotAvail(@item.UserProfile.FirstName!) @UIHelper.NotAvail(@item.UserProfile.LastName!)</h6>
+                                <p class="date">Created on: @item.DateCreated.ToString("dd-MM-yyyy")</p>
+                                <a href="@($"/view-profile/{item.UserId}")" class="btn btn-outline-success btn-sm view-button"><i class="bi bi-eye"></i> View</a>
                             </div>
                         </div>
                     }
                 }
             </div>
         }
-    </div>    
+    </div>
 </div>
 
 @code {

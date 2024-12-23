@@ -1,5 +1,6 @@
 ﻿@using GolfClub.BLL.Helpers
 @using GolfClub.DAL.Models
+
 <ModalComponent IsVisible="@IsVisible" Title="Fitting Schedule">
     <BodyContent>
         @if (SelectedFitting is null)
@@ -40,5 +41,5 @@
     [Parameter]
     public bool IsVisible { get; set; }
     [Parameter]
-    public Fitting SelectedFitting { get; set; }
+    public Fitting? SelectedFitting { get; set; }
 }
