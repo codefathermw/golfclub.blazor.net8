@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace GolfClub.BLL.Services.Password
 {
     public static class PasswordService
@@ -21,9 +16,7 @@ namespace GolfClub.BLL.Services.Password
         public static bool VerifyPassword(string hashedPassword, string providedPassword)
         {
             if (string.IsNullOrWhiteSpace(providedPassword) || string.IsNullOrWhiteSpace(hashedPassword))
-            {
                 throw new ArgumentException("Password or hashed password cannot be null or empty.");
-            }
 
             return BCrypt.Net.BCrypt.Verify(providedPassword, hashedPassword);
         }

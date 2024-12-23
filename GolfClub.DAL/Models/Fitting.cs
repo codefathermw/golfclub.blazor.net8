@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace GolfClub.DAL.Models
 {
     public class Fitting
@@ -15,6 +10,6 @@ namespace GolfClub.DAL.Models
         public string Status { get; set; }
         public string FittingType { get; set; }
         public int UserId { get; set; }
-        public UserAccount User { get; set; }
+        public virtual UserAccount? User { get; set; }
     }
 }

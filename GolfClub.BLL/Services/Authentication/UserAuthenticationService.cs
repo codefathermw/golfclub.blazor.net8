@@ -27,33 +27,31 @@ namespace GolfClub.BLL.Services.Authentication
                 if (authState.User.Identity!.IsAuthenticated)
                 {
                     var userId = authState.User.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
-                    return BaseResponseFactory.IsSuccess(Convert.ToInt32(userId));
+                    return BaseResponseFactory.Success(Convert.ToInt32(userId));
                 }
 
-                return BaseResponseFactory.IsError<int>("UserId not found");
+                return BaseResponseFactory.Error<int>("UserId not found");
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Encountered an error");
-
-                return BaseResponseFactory.IsError<int>("An error occurred failed to get user id");
+                return BaseResponseFactory.Error<int>("Failed to get user id");
             }
         }
 
-        public async Task<BaseResponse<string>> CreateAccountAsync(UserAccountDto signupDto)
+        public async Task<BaseResponse<string>> CreateAccountAsync(UserDto signupDto)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(signupDto.UserName) || string.IsNullOrWhiteSpace(signupDto.Password))
-                    return BaseResponseFactory.IsError<string>("Username and password are required.");
+                    return BaseResponseFactory.Error<string>("Username and password are required.");
 
                 var existingUser = await userRepository.TryGetAsync(u => u.UserName == signupDto.UserName);
 
                 if (existingUser is not null)
-                    return BaseResponseFactory.IsError<string>("Username already exists.");
+                    return BaseResponseFactory.Error<string>("Username already exists.");
 
                 var hashedPassword = PasswordService.HashPassword(signupDto.Password);
-
                 var user = new UserAccount()
                 {
                     UserName = signupDto.UserName,
@@ -64,7 +62,6 @@ namespace GolfClub.BLL.Services.Authentication
 
                 var newUser = await userRepository.AddAsync(user);
                 await userRepository.SaveChangesAsync();
-
                 var newProfile = new UserProfile
                 {
                     UserId = newUser.UserId,
@@ -76,14 +73,12 @@ namespace GolfClub.BLL.Services.Authentication
 
                 await userProfileRepository.AddAsync(newProfile);
                 await userProfileRepository.SaveChangesAsync();
-
-                return BaseResponseFactory.IsOk<string>();
+                return BaseResponseFactory.Ok<string>();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error creating account for username {username}", signupDto.UserName);
-
-                return BaseResponseFactory.IsError<string>("An error occurred while creating the account.");
+                return BaseResponseFactory.Error<string>("Failed to create account.");
             }
         }
 
@@ -92,16 +87,33 @@ namespace GolfClub.BLL.Services.Authentication
             try
             {
                 var user = await userRepository.TryGetAsync(u => u.UserName == userName);
-
-                return BaseResponseFactory.IsSuccess(user is not null);
+                return BaseResponseFactory.Success(user is not null);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error checking if username {username} exists", userName);
-
-                return BaseResponseFactory.IsError<bool>("An error occurred while checking the username.");
+                return BaseResponseFactory.Error<bool>("Failed to check username.");
             }
         }
+
+        //public async Task<BaseResponse<string>> VerifyIdentity(int userId, string password)
+        //{
+        //    try
+        //    {
+        //        var db = userRepository.GetContext<AppDbContext>();
+        //        var user = await db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+
+        //        if (user is null || !PasswordService.VerifyPassword(user.PasswordHash, password))
+        //            return BaseResponseFactory.Error<string>("Incorrect credentials provided");
+
+        //        return BaseResponseFactory.Success<string>(user.UserName);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        logger.LogError(ex, "Exception occurred trying to verify identity");
+        //        return BaseResponseFactory.Error<string>("Failed to login.");
+        //    }
+        //}
 
         public async Task<BaseResponse<ClaimsIdentity>> LoginAsync(LoginDto loginDto)
         {
@@ -114,7 +126,7 @@ namespace GolfClub.BLL.Services.Authentication
                     .FirstOrDefaultAsync(u => u.UserName == loginDto.Username);
 
                 if (user is null || !PasswordService.VerifyPassword(user.PasswordHash, loginDto.Password))
-                    return BaseResponseFactory.IsError<ClaimsIdentity>("Incorrect credentials provided");
+                    return BaseResponseFactory.Error<ClaimsIdentity>("Incorrect credentials provided");
 
                 var claims = new List<Claim>
                 {
@@ -123,7 +135,7 @@ namespace GolfClub.BLL.Services.Authentication
                 };
 
                 if (user.UserRoles.Count == 0)
-                    return BaseResponseFactory.IsError<ClaimsIdentity>("Failed to identify user roles");
+                    return BaseResponseFactory.Error<ClaimsIdentity>("Failed to identify user roles");
 
                 foreach (var userRole in user.UserRoles)
                 {
@@ -131,14 +143,12 @@ namespace GolfClub.BLL.Services.Authentication
                 }
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-                return BaseResponseFactory.IsSuccess(claimsIdentity);
+                return BaseResponseFactory.Success(claimsIdentity);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Exception occurred during login with username {Username}", loginDto.Username);
-
-                return BaseResponseFactory.IsError<ClaimsIdentity>("An error occurred, failed to login.");
+                return BaseResponseFactory.Error<ClaimsIdentity>("Failed to login.");
             }
         }
 
@@ -147,14 +157,12 @@ namespace GolfClub.BLL.Services.Authentication
             try
             {
                 var user = await userProfileRepository.TryGetAsync(u => u.Email == email);
-
-                return BaseResponseFactory.IsSuccess(user is not null);
+                return BaseResponseFactory.Success(user is not null);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error checking if email {email} exists", email);
-
-                return BaseResponseFactory.IsError<bool>("An error occurred while checking the email.");
+                return BaseResponseFactory.Error<bool>("Failed to check email.");
             }
         }
     }

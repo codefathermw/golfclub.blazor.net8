@@ -38,17 +38,15 @@ namespace GolfClub.BLL.Services.Fittings
                 if (result is not null)
                 {
                     var freeSlots = GetFreeSlots(slots, result.Select(u => u.ScheduledDate).ToList());
-
-                    return BaseResponseFactory.IsSuccess(freeSlots);
+                    return BaseResponseFactory.Success(freeSlots);
                 }
 
-                return BaseResponseFactory.IsSuccess<IEnumerable<TimeSpan>>(slots);
+                return BaseResponseFactory.Success<IEnumerable<TimeSpan>>(slots);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Encountered an error while getting available time slots");
-
-                return BaseResponseFactory.IsError<IEnumerable<TimeSpan>>("Encountered an error while getting available time slots.");
+                return BaseResponseFactory.Error<IEnumerable<TimeSpan>>("Failed to get available time slots.");
             }
         }
 
@@ -64,15 +62,14 @@ namespace GolfClub.BLL.Services.Fittings
                     .FirstOrDefaultAsync();
 
                 if (result is null)
-                    return BaseResponseFactory.IsError<Fitting>("Not found");
+                    return BaseResponseFactory.Error<Fitting>("Not found");
 
-                return BaseResponseFactory.IsSuccess(result);
+                return BaseResponseFactory.Success(result);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Encountered an error");
-
-                return BaseResponseFactory.IsError<Fitting>();
+                return BaseResponseFactory.Error<Fitting>();
             }
         }
 
@@ -81,14 +78,12 @@ namespace GolfClub.BLL.Services.Fittings
             try
             {
                 var result = await fittingRepository.GetAllAsync(u => u.UserId == userId);
-
-                return BaseResponseFactory.IsSuccess(result);
+                return BaseResponseFactory.Success(result);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Encountered an error");
-
-                return BaseResponseFactory.IsError<IEnumerable<Fitting>>();
+                return BaseResponseFactory.Error<IEnumerable<Fitting>>();
             }
         }
 
@@ -102,13 +97,12 @@ namespace GolfClub.BLL.Services.Fittings
                     .ThenInclude(ur => ur.UserProfile)
                     .ToListAsync();
                 
-                return BaseResponseFactory.IsSuccess<IEnumerable<Fitting>>(result);
+                return BaseResponseFactory.Success<IEnumerable<Fitting>>(result);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Encountered an error");
-
-                return BaseResponseFactory.IsError<IEnumerable<Fitting>>();
+                return BaseResponseFactory.Error<IEnumerable<Fitting>>();
             }
         }
 
@@ -117,14 +111,12 @@ namespace GolfClub.BLL.Services.Fittings
             try
             {
                 var result = await fittingRepository.GetAllAsync(u => u.ScheduledDate.Month.Equals(dateTime.Month) && u.ScheduledDate.Year.Equals(dateTime.Year));
-
-                return BaseResponseFactory.IsSuccess(result);
+                return BaseResponseFactory.Success(result);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "An error encountered");
-
-                return BaseResponseFactory.IsError<IEnumerable<Fitting>>();
+                return BaseResponseFactory.Error<IEnumerable<Fitting>>();
             }
         }
 
@@ -133,8 +125,7 @@ namespace GolfClub.BLL.Services.Fittings
             try
             {
                 var response = await GetMonthlyFittingsAsync(DateTime.Now);
-                var refNum = $"F{DateTime.Now:yyMMdd}-{response.Result.Count()}" ;
-
+                var refNum = $"F{DateTime.Now:yyMMdd}-{response.Result.Count()}";
                 var entity = new Fitting()
                 {
                     Comments = saveFittingRequestDto.Comments,
@@ -148,14 +139,12 @@ namespace GolfClub.BLL.Services.Fittings
 
                 await fittingRepository.AddAsync(entity);
                 await fittingRepository.SaveChangesAsync();
-
-                return BaseResponseFactory.IsOk<bool>();
+                return BaseResponseFactory.Ok<bool>();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Encountered an error while saving {name} request", saveFittingRequestDto.FittingType);
-
-                return BaseResponseFactory.IsError<bool>($"Encountered an error while saving {saveFittingRequestDto.FittingType} request");
+                return BaseResponseFactory.Error<bool>($"Failed to save {saveFittingRequestDto.FittingType} request");
             }
         }
 
@@ -167,14 +156,12 @@ namespace GolfClub.BLL.Services.Fittings
                 result!.Status = status.ToString();
                 fittingRepository.Update(result);
                 await fittingRepository.SaveChangesAsync();
-
-                return BaseResponseFactory.IsOk<bool>();
+                return BaseResponseFactory.Ok<bool>();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Encountered an error while updating fitting status");
-
-                return BaseResponseFactory.IsError<bool>("Encountered an error while updating fitting status");
+                return BaseResponseFactory.Error<bool>("Failed to update fitting status");
             }
         }
     }

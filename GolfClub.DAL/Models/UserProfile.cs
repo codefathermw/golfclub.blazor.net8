@@ -11,6 +11,6 @@ namespace GolfClub.DAL.Models
         public string? Phone { get; set; }
         public string? GolfClubSize { get; set; }
         public DateTime DateUpdated { get; set; }
-        public UserAccount User { get; set; }
+        public virtual UserAccount? User { get; set; }
     }
 }

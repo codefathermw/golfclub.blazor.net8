@@ -11,14 +11,12 @@ namespace GolfClub.BLL.Services.Files
             {
                 var filePath = Path.Combine("wwwroot", "files", "paragraph.html");
                 await File.WriteAllTextAsync(filePath, content);
-
-                return BaseResponseFactory.IsOk<string>();
+                return BaseResponseFactory.Ok<string>();
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Encountered an exception");
-
-                return BaseResponseFactory.IsError<string>("An error occurred, failed to save contents to file");
+                return BaseResponseFactory.Error<string>("Failed to save contents to file");
             }
         }
 
@@ -29,14 +27,14 @@ namespace GolfClub.BLL.Services.Files
                 var filePath = Path.Combine("wwwroot", "files", "paragraph.html");
 
                 if (File.Exists(filePath))
-                    return BaseResponseFactory.IsSuccess(await File.ReadAllTextAsync(filePath));
+                    return BaseResponseFactory.Success(await File.ReadAllTextAsync(filePath));
 
-                return BaseResponseFactory.IsError<string>("<p>No content available.</p>");
+                return BaseResponseFactory.Error<string>("<p>No content available.</p>");
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Encountered an exception");
-                return BaseResponseFactory.IsError<string>("An error occurred, failed to save contents to file");
+                return BaseResponseFactory.Error<string>("Failed to save contents to file");
             }
         }
     }

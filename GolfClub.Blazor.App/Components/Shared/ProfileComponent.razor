@@ -1,42 +1,47 @@
-@using GolfClub.BLL.Enums
 @using GolfClub.BLL.Helpers
 @using GolfClub.BLL.Services.Users
 @using GolfClub.Blazor.App.Components.Modals
 @using GolfClub.Blazor.App.Components.Pages.UpdateForms
+@using GolfClub.Blazor.App.Domain.Enums
+@using GolfClub.Blazor.App.Domain.Helpers
 @using GolfClub.DAL.Models
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager;
 @inject IUserService userService;
 
-@if (User is null)
+@if (UserProfile is null)
 {
     <p>Please wait...</p>
 }
 else
 {
-    <ModalComponent IsVisible="@isVisible" Title="@editFormTitle" @ref="modal">
+    <ModalComponent IsVisible="@isModalVisible" Title="@editFormTitle" @ref="modal">
         <BodyContent>
-            <div class="@(!showErrorAlert ? "d-none" : null)">
-                <div class="alert alert-danger alert-dismissible fade @(showErrorAlert ? "show" : "")" role="alert">
-                    <span>@message</span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
+            <div class="px-3">
+                @if (isError)
+                {
+                    <div class="alert alert-danger alert-dismissible show" role="alert">
+                        <span>@message</span>
+                        <button type="button" class="btn-close btn-sm" @onclick="CloseAlert"></button>
+                    </div>                    
+                }
+
+                @if (editActionEnum == ProfileEditActionEnum.Personal)
+                {
+                    <UpdateProfileForm UserProfile="@UserProfile" @ref="profileForm" />
+                }
+                else if (editActionEnum == ProfileEditActionEnum.Contacts)
+                {
+                    <UpdateContactsForm UserProfile="@UserProfile" @ref="contactsForm" />
+                }
+                else if (editActionEnum == ProfileEditActionEnum.Password)
+                {
+                    <UpdatePasswordForm UserId="@UserProfile.UserId" @ref="passwordForm" />
+                }
             </div>
-            @if (editActionEnum == ProfileEditActionEnum.Personal)
-            {
-                <UpdateProfileForm UserProfile="@User" @ref="profileForm"/>
-            }
-            else if (editActionEnum == ProfileEditActionEnum.Contacts)
-            {
-                <UpdateContactsForm UserProfile="@User" @ref="contactsForm"/>
-            }
-            else if (editActionEnum == ProfileEditActionEnum.Password)
-            {
-                <UpdatePasswordForm UserProfile="@User" @ref="passwordForm"/>
-            }
         </BodyContent>
         <FooterContent>
-            <button class="btn btn-primary" @onclick="Submit">Save Changes</button>
+            <button class="btn btn-primary" @onclick="Submit">Save</button>
         </FooterContent>
     </ModalComponent>
 
@@ -55,8 +60,8 @@ else
 
         <div class="justify-content-between d-flex mb-4">
             <div class="my-3">
-                <h5>@UIHelper.NotAvail(User.FirstName!) @UIHelper.NotAvail(User.LastName!)</h5>
-                <h6>Member</h6>
+                <h5>@UIHelper.NotAvail(UserProfile.FirstName!) @UIHelper.NotAvail(UserProfile.LastName!)</h5>
+                <h6 class="font-weight-normal text-muted">Member</h6>
             </div>
             <div>
                 <AuthorizeView Roles="Admin">
@@ -69,7 +74,7 @@ else
             </div>
         </div>
 
-        <hr />
+        <hr style="border-color: #ccc!important;" />
 
         <div class="justify-content-between d-flex mb-4">
             <h5 class="text-success">Personal Information</h5>
@@ -81,32 +86,32 @@ else
         <div class="row">
             <div class="col-5">
                 <label class="text-black-50 mb-1">First Name</label>
-                <p>@UIHelper.NotAvail(User.FirstName)</p>
+                <p>@UIHelper.NotAvail(UserProfile.FirstName)</p>
             </div>
             <div class="col-5">
                 <label class="text-black-50 mb-1">Last Name</label>
-                <p>@UIHelper.NotAvail(User.LastName)</p>
+                <p>@UIHelper.NotAvail(UserProfile.LastName)</p>
             </div>
         </div>
         <div class="row">
             <div class="col-5">
                 <label class="text-black-50 mb-1">Date of Birth</label>
-                <p>@(User.DateOfBirth is not null ? User.DateOfBirth.Value.ToString("dd-MM-yyyy") : "N/A")</p>
+                <p>@(UserProfile.DateOfBirth is not null ? UserProfile.DateOfBirth.Value.ToString("dd-MM-yyyy") : "N/A")</p>
             </div>
             <div class="col-5">
                 <label class="text-black-50 mb-1">Physical Address</label>
-                <p>@UIHelper.NotAvail(User.Address!)</p>
+                <p>@UIHelper.NotAvail(UserProfile.Address!)</p>
             </div>
         </div>
 
         <div class="row mb-3">
             <div class="col-5">
                 <label class="text-black-50 mb-1">Golf Club Size</label>
-                <p>@UIHelper.NotAvail(User.GolfClubSize!)</p>
+                <p>@UIHelper.NotAvail(UserProfile.GolfClubSize!)</p>
             </div>
         </div>
 
-        <hr style="border-color: #cc!important;" />
+        <hr style="border-color: #ccc!important;" />
 
         <div class="justify-content-between d-flex mb-4">
             <h5 class="text-success">Contact Information</h5>
@@ -119,11 +124,11 @@ else
             <div class="row mb-3">
                 <div class="col-5">
                     <label class="text-black-50 mb-1">Email Address</label>
-                    <p>@UIHelper.NotAvail(User.Email)</p>
+                    <p>@UIHelper.NotAvail(UserProfile.Email)</p>
                 </div>
                 <div class="col-5">
                     <label class="text-black-50 mb-1">Phone Number</label>
-                    <p>@UIHelper.NotAvail(User.Phone!)</p>
+                    <p>@UIHelper.NotAvail(UserProfile.Phone!)</p>
                 </div>
             </div>
         </div>
@@ -133,17 +138,16 @@ else
 @code {
     [Parameter]
     public int userId { get; set; }
-    private UserProfile? User { get; set; }
-    private bool isVisible = false;
-    public ProfileEditActionEnum editActionEnum = ProfileEditActionEnum.None;
-    private string editFormTitle = string.Empty;
+    private UserProfile? UserProfile { get; set; }
+    private ModalComponent? modal;
     private UpdateProfileForm? profileForm;
     private UpdateContactsForm? contactsForm;
     private UpdatePasswordForm? passwordForm;
-    private ModalComponent? modal;
-    private bool showErrorAlert = false;
     private bool isError = false;
+    private bool isModalVisible = false;
+    private string editFormTitle = string.Empty;
     private string message = string.Empty;
+    public ProfileEditActionEnum editActionEnum = ProfileEditActionEnum.None;
 
     protected override async Task OnInitializedAsync()
     {
@@ -155,7 +159,7 @@ else
             return;
         }
 
-        User = response.Result;
+        UserProfile = response.Result;
     }
 
     private async Task Submit()
@@ -177,16 +181,16 @@ else
 
         if (response is not null)
         {
-            showErrorAlert = response.IsErrorOccurred;
+            isError = response.IsErrorOccurred;
             message = response.Message;
 
-            if (!showErrorAlert)
-            {
+            if (!isError)
                 await modal!.CloseModal();
-            }
         }
-
-        showErrorAlert = false;
+        else
+        {
+            isError = false;            
+        }
     }
 
     private void EditAction(ProfileEditActionEnum action)
@@ -199,6 +203,11 @@ else
             ProfileEditActionEnum.Contacts => "Edit Contact Information",
             _ => "Edit Profile"
         };
-        isVisible = true;
+        isModalVisible = true;
+    }
+
+    private void CloseAlert()
+    {
+        isError = false;
     }
 }

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace GolfClub.BLL.Models.Domain
+namespace GolfClub.Blazor.App.Domain.Models
 {
     public class LoginFormModel
     {

@@ -1,10 +1,8 @@
 ﻿@page "/account-history"
-@using GolfClub.BLL.Helpers
-@using GolfClub.BLL.Services.Files
-@using GolfClub.BLL.Services.Fittings
-@using GolfClub.DAL.Models
 @using GolfClub.BLL.Services.Authentication
-@using Microsoft.AspNetCore.Authentication
+@using GolfClub.BLL.Services.Fittings
+@using GolfClub.Blazor.App.Domain.Helpers
+@using GolfClub.DAL.Models
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "User")]
 @attribute [StreamRendering]

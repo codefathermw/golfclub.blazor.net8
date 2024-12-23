@@ -19,22 +19,20 @@ namespace GolfClub.BLL.Services.Users
             try
             {
                 var db = userRepository.GetContext<AppDbContext>();
-                var user = await db.Users.FirstOrDefaultAsync(u => u.UserName == updatePasswordDto.UserName);
+                var user = await db.Users.FirstOrDefaultAsync(u => u.UserId == updatePasswordDto.UserId);
 
-                if (user is null || !PasswordService.VerifyPassword(updatePasswordDto.OldPassword, user.PasswordHash))
-                    return BaseResponseFactory.IsError<string>("Invalid old password.");
+                if (user is null || !PasswordService.VerifyPassword(user.PasswordHash, updatePasswordDto.OldPassword))
+                    return BaseResponseFactory.Error<string>("Invalid old password.");
 
                 user.PasswordHash = PasswordService.HashPassword(updatePasswordDto.NewPassword);
                 userRepository.Update(user);
                 await db.SaveChangesAsync();
-
-                return BaseResponseFactory.IsOk<string>();
+                return BaseResponseFactory.Ok<string>();
             }
             catch (Exception ex)
             {
                 logger.LogDebug(ex, "Encountered an error");
-
-                return BaseResponseFactory.IsError<string>("Encountered an error");
+                return BaseResponseFactory.Error<string>("Encountered an error");
             }
         }
 
@@ -43,14 +41,12 @@ namespace GolfClub.BLL.Services.Users
             try
             {
                 var profile = await profileRepository.TryGetByIdAsync(userId);
-
-                return BaseResponseFactory.IsSuccess(profile!);
+                return BaseResponseFactory.Success(profile!);
             }
             catch (Exception ex)
             {
                 logger.LogDebug(ex, "Encountered an error");
-
-                return BaseResponseFactory.IsError<UserProfile>("Encountered an error");
+                return BaseResponseFactory.Error<UserProfile>("Encountered an error");
             }
         }
 
@@ -61,14 +57,12 @@ namespace GolfClub.BLL.Services.Users
                 profile.DateUpdated = DateTime.Now;
                 profileRepository.Update(profile);
                 await profileRepository.SaveChangesAsync();
-
-                return BaseResponseFactory.IsOk<string>();
+                return BaseResponseFactory.Ok<string>();
             }
             catch (Exception ex)
             {
                 logger.LogDebug(ex, "Encountered an error");
-
-                return BaseResponseFactory.IsError<string>("Encountered an error");
+                return BaseResponseFactory.Error<string>("Encountered an error");
             }
         }
 
@@ -81,14 +75,12 @@ namespace GolfClub.BLL.Services.Users
                     .Where(u => u.UserId != 1)
                     .Include(q => q.UserProfile)
                     .ToListAsync();
-
-                return BaseResponseFactory.IsSuccess(users);
+                return BaseResponseFactory.Success(users);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "An error occurred");
-
-                return BaseResponseFactory.IsError<List<UserAccount>>("An error occurred");
+                return BaseResponseFactory.Error<List<UserAccount>>("An error occurred");
             }
         }
     }

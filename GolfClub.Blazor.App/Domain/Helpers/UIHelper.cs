@@ -1,6 +1,6 @@
 using GolfClub.BLL.Enums;
 
-namespace GolfClub.BLL.Helpers
+namespace GolfClub.Blazor.App.Domain.Helpers
 {
     public static class UIHelper
     {
@@ -26,7 +26,7 @@ namespace GolfClub.BLL.Helpers
 
             for (int i = 0; i < words.Length; i++)
             {
-                words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1);
+                words[i] = char.ToUpper(words[i][0]) + words[i][1..];
             }
 
             return string.Join(" ", words);
