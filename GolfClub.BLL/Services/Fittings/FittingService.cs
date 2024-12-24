@@ -87,7 +87,7 @@ namespace GolfClub.BLL.Services.Fittings
             }
         }
 
-        public async Task<BaseResponse<IEnumerable<Fitting>>> GetFittingRequestAsync()
+        public async Task<BaseResponse<IEnumerable<Fitting>>> GetFittingRequestsAsync()
         {
             try
             {
@@ -148,11 +148,14 @@ namespace GolfClub.BLL.Services.Fittings
             }
         }
 
-        public async Task<BaseResponse<bool>> UpdateFittingStatusAsync(int fittingId, StatusEnum status)
+        public async Task<BaseResponse<bool>> UpdateFittingStatusAsync(string fittingRefNumber, StatusEnum status)
         {
             try
             {
-                var result = await fittingRepository.TryGetByIdAsync(fittingId);
+                var db = fittingRepository.GetContext<AppDbContext>();
+                var result = await db!.FittingRequests
+                    .Where(u => u.ReferenceNumber == fittingRefNumber)
+                    .FirstOrDefaultAsync();
                 result!.Status = status.ToString();
                 fittingRepository.Update(result);
                 await fittingRepository.SaveChangesAsync();

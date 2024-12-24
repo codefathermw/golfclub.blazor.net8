@@ -1,4 +1,4 @@
-﻿@page "/fitting-tasks/{RequestId:int?}"
+﻿@page "/fitting-tasks/{FittingRefNumber?}"
 @using GolfClub.BLL.Enums
 @using GolfClub.BLL.Services.Fittings
 @using Microsoft.AspNetCore.Authorization
@@ -7,13 +7,30 @@
 @inject IFittingService fittingService
 @inject NavigationManager navigationManager
 
-
 <PageTitle>Manage Fitting Tasks</PageTitle>
 
 <div class="p-3">
-    @if (RequestId.HasValue)
+    @if (FittingRefNumber is null)
     {
-        <h2 class="text-success mb-3">Fitting Tasks for Request No: @RequestId.Value</h2>
+        <div class="col-12 modal-dialog-centered p-3">
+            <div class="col-6 mx-auto text-center">
+                <p class="lead">Please select a fitting request to update tasks.</p>
+                <NavLink class="btn btn-outline-primary mx-auto text-center" href="fitting-requests">Go to Fittings Request</NavLink>
+            </div>
+        </div>
+    }
+    else if (!IsRefNumberValid)
+    {
+        <div class="col-12 modal-dialog-centered p-3">
+            <div class="col-6 mx-auto text-center">
+                <p class="lead">Invalid Reference Number provided, please select another fitting request.</p>
+                <NavLink class="btn btn-outline-primary mx-auto text-center" href="fitting-requests">Go to Fittings Request</NavLink>
+            </div>
+        </div>
+    }
+    else
+    {
+        <h2 class="text-success mb-3">Fitting Tasks for Request No: @FittingRefNumber</h2>
         <p class="mb-4">Below is a list of tasks associated with this fitting request. </p>
         <h5 class="mb-3">Task List</h5>
         <ul class="list-group">
@@ -24,23 +41,24 @@
                     <button class="btn btn-outline-secondary btn-sm" @onclick="() => UpdateTask(item.Key)">Update Status</button>
                 </li>
             }
-        </ul>   
-    }
-    else
-    {
-        <div class="col-12 modal-dialog-centered p-3">
-            <div class="col-6 mx-auto text-center">
-                <p class="lead">Please select a fitting request to update tasks.</p>
-                <NavLink class="btn btn-outline-primary mx-auto text-center" href="fitting-requests">Go to Fittings Request</NavLink>
-            </div>
-        </div>
+        </ul>
     }
 </div>
 
 @code {
     [Parameter]
-    public int? RequestId { get; set; }
+    public string? FittingRefNumber { get; set; }
     public string errorMessage { get; set; } = null!;
+    public bool IsRefNumberValid { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (FittingRefNumber is not null)
+        {
+            var response = await fittingService.GetFittingByReferenceNumberAsync(FittingRefNumber);
+            IsRefNumberValid = !response.IsErrorOccurred;          
+        }
+    }
 
     public Dictionary<StatusEnum, string> fittingTasks = new ()
         {
@@ -54,7 +72,7 @@
 
     private async Task UpdateTask(StatusEnum status)
     {
-        var response = await fittingService.UpdateFittingStatusAsync(RequestId!.Value, status);
+        var response = await fittingService.UpdateFittingStatusAsync(FittingRefNumber!, status);
 
         if (response.IsErrorOccurred)
         {

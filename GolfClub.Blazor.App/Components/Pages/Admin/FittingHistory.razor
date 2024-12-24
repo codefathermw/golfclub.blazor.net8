@@ -71,7 +71,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await fittingService.GetFittingRequestAsync();
+        var response = await fittingService.GetFittingRequestsAsync();
 
         if (response.IsErrorOccurred)
         {
